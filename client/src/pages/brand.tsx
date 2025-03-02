@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Product, type Brand } from "@shared/schema";
-import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { FixedCart } from "@/components/fixed-cart";
 
@@ -42,26 +41,10 @@ export default function BrandPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto py-8 px-4">
         {/* Brand Header */}
-        <div className="flex justify-between items-center mb-12">
+        <div className="mb-12">
           <h1 className="text-2xl font-normal lowercase tracking-wide">
             {brand.data.name}
           </h1>
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-white border-white hover:bg-white/10 lowercase"
-            >
-              filter
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-white border-white hover:bg-white/10 lowercase"
-            >
-              all
-            </Button>
-          </div>
         </div>
 
         {/* Product Grid */}
@@ -93,17 +76,9 @@ export default function BrandPage({ params }: { params: { id: string } }) {
           ))}
         </div>
 
-        {/* Footer Navigation */}
-        <div className="flex justify-center gap-8 mt-12 text-sm lowercase">
-          <a href="#" className="hover:text-white/70">shop</a>
-          <a href="#" className="hover:text-white/70">lookbook</a>
-          <a href="#" className="hover:text-white/70">archive</a>
-          <a href="#" className="hover:text-white/70">contact</a>
-        </div>
+        {/* Fixed Cart */}
+        <FixedCart />
       </div>
-
-      {/* Fixed Cart */}
-      <FixedCart />
     </div>
   );
 }
