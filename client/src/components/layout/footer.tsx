@@ -76,6 +76,9 @@ export function Footer() {
               <li>
                 <a href="#" className="hover:text-white">Sustentabilidade</a>
               </li>
+              <li>
+                <a href="/store" className="hover:text-white">Store Management</a>
+              </li>
             </ul>
           </div>
 
