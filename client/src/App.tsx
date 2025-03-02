@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import ProductPage from "@/pages/product";
@@ -24,13 +25,14 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="amazonclone-theme">
+    <ThemeProvider defaultTheme="system" storageKey="delacream-theme">
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1">
             <Router />
           </main>
+          <Footer />
         </div>
         <Toaster />
       </QueryClientProvider>
