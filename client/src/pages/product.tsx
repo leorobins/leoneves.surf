@@ -1,14 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { FixedCart } from "@/components/fixed-cart";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 const SIZES = ["28", "30", "32", "34", "36"];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const product = useQuery<Product>({
     queryKey: [`/api/products/${params.id}`]
@@ -16,6 +20,29 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const relatedProducts = useQuery<Product[]>({
     queryKey: ["/api/products"]
+  });
+
+  const addToCart = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/cart", {
+        productId: parseInt(params.id),
+        quantity: 1,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      toast({
+        title: "Added to cart",
+        description: `${product.data?.name} has been added to your cart.`
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Could not add item to cart. Please try again.",
+        variant: "destructive"
+      });
+    }
   });
 
   if (product.isLoading) {
@@ -100,9 +127,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {/* Add to Cart Button */}
             <Button 
               className="w-full bg-zinc-700 hover:bg-zinc-600 text-white lowercase"
-              disabled={product.data.stock === 0}
+              disabled={product.data.stock === 0 || addToCart.isPending}
+              onClick={() => addToCart.mutate()}
             >
-              {product.data.stock === 0 ? "sold out" : "add to cart"}
+              {product.data.stock === 0 ? "sold out" : 
+               addToCart.isPending ? "adding..." : "add to cart"}
             </Button>
 
             {/* Product Description */}
