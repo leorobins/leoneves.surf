@@ -14,7 +14,7 @@ export function FixedCart() {
       <div className="uppercase text-sm mb-2 font-light">CART</div>
       <div className="flex justify-between items-center text-sm">
         <div>{itemCount} Items</div>
-        <div>€|EUR</div>
+        <div>$|USD</div>
       </div>
       <div className="grid grid-cols-2 gap-px mt-4 bg-white/20">
         <Link href="/cart">

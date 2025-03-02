@@ -73,8 +73,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <div>
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-xl font-normal lowercase mb-2">"{product.data.name}"</h1>
-                  <p className="text-lg">€{product.data.price}</p>
+                  <h1 className="text-xl font-normal lowercase mb-2">{" " + product.data.name}</h1>
+                  <p className="text-lg">${product.data.price}</p>
                 </div>
                 <Link href="/next" className="text-sm lowercase hover:text-white/70">next</Link>
               </div>
