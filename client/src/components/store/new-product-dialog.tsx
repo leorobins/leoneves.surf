@@ -106,6 +106,7 @@ export function NewProductDialog() {
       await apiRequest("POST", "/api/products", {
         ...data,
         price: parseFloat(data.price),
+        stock: parseInt(data.stock as unknown as string),
         brandId: parseInt(data.brandId as unknown as string),
       });
     },

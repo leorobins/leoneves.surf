@@ -5,6 +5,7 @@ export interface IStorage {
   getProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   getProductsByBrand(brandId: number): Promise<Product[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
 
   // Brands
   getBrands(): Promise<Brand[]>;
@@ -226,6 +227,13 @@ export class MemStorage implements IStorage {
     return Array.from(this.products.values()).filter(
       product => product.brandId === brandId
     );
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const id = this.currentProductId++;
+    const newProduct: Product = { ...product, id };
+    this.products.set(id, newProduct);
+    return newProduct;
   }
 
   // Brand methods

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCartItemSchema, insertBrandSchema } from "@shared/schema";
+import { insertCartItemSchema, insertBrandSchema, insertProductSchema } from "@shared/schema"; // Added import
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -25,6 +25,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const brandId = parseInt(req.params.brandId);
     const products = await storage.getProductsByBrand(brandId);
     res.json(products);
+  });
+
+  app.post("/api/products", async (req, res) => {
+    try {
+      const data = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(data);
+      res.json(product);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data" });
+        return;
+      }
+      throw error;
+    }
   });
 
   // Brands
