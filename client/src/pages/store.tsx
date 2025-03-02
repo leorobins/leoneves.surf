@@ -153,27 +153,40 @@ export default function StorePage() {
         {/* Google Sheets Sync Section */}
         <div className="mt-8 border border-white/20 rounded-lg p-4">
           <h2 className="text-xl font-normal mb-4 lowercase">Google Sheets Sync</h2>
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm mb-2">Spreadsheet ID</label>
-              <Input
-                value={spreadsheetId}
-                onChange={(e) => setSpreadsheetId(e.target.value)}
-                className="bg-transparent border-white/20"
-                placeholder="Enter your Google Spreadsheet ID"
-              />
-              <p className="text-xs text-white/60 mt-1">
-                Find this in your Google Sheets URL: docs.google.com/spreadsheets/d/[Spreadsheet-ID]/edit
-              </p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm mb-2">How to find your Spreadsheet ID:</label>
+              <ol className="list-decimal list-inside text-sm text-white/60 space-y-1 ml-2">
+                <li>Open your Google Sheet</li>
+                <li>Look at the URL: docs.google.com/spreadsheets/d/<span className="text-white">spreadsheet-id</span>/edit</li>
+                <li>Copy the ID part from the URL</li>
+              </ol>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => syncSheets.mutate()}
-              disabled={!spreadsheetId || syncSheets.isPending}
-              className="text-white border-white/20 hover:bg-white/10"
-            >
-              {syncSheets.isPending ? "Syncing..." : "Sync with Sheets"}
-            </Button>
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm mb-2">Spreadsheet ID</label>
+                <Input
+                  value={spreadsheetId}
+                  onChange={(e) => setSpreadsheetId(e.target.value)}
+                  className="bg-transparent border-white/20"
+                  placeholder="Enter your Google Spreadsheet ID"
+                />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => syncSheets.mutate()}
+                disabled={!spreadsheetId || syncSheets.isPending}
+                className="text-white border-white/20 hover:bg-white/10"
+              >
+                {syncSheets.isPending ? (
+                  <>
+                    <span className="animate-pulse">Syncing...</span>
+                  </>
+                ) : (
+                  "Sync with Sheets"
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
