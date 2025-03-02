@@ -84,7 +84,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Main Product Image with Back Button */}
           <div className="relative">
             <button 
-              onClick={() => setLocation(-1)}
+              onClick={() => setLocation(`/brand/${product.data.brandId}`)}
               className="absolute left-4 top-4 z-10 hover:text-white/70"
             >
               <ChevronLeft className="h-5 w-5" />

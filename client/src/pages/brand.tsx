@@ -47,7 +47,7 @@ export default function BrandPage({ params }: { params: { id: string } }) {
         <div className="mb-12">
           <div className="flex items-center gap-6">
             <button 
-              onClick={() => setLocation(-1)}
+              onClick={() => setLocation("/")}
               className="hover:text-white/70"
             >
               <ChevronLeft className="h-5 w-5" />
