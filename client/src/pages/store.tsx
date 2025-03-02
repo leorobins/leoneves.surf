@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Brand, type Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
 import { Plus } from "lucide-react";
 import {
   Table,
@@ -12,6 +11,8 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { NewBrandDialog } from "@/components/store/new-brand-dialog";
+import { NewProductDialog } from "@/components/store/new-product-dialog";
 
 export default function StorePage() {
   const brands = useQuery<Brand[]>({
@@ -28,22 +29,8 @@ export default function StorePage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-normal lowercase">Store Management</h1>
           <div className="flex gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-white border-white/20 hover:bg-white/10"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Brand
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-white border-white/20 hover:bg-white/10"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Product
-            </Button>
+            <NewBrandDialog />
+            <NewProductDialog />
           </div>
         </div>
 
