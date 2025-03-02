@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ShoppingCart, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -25,13 +25,6 @@ export function Header() {
             </Button>
           </form>
         </div>
-
-        <Link href="/cart">
-          <a className="flex items-center gap-2">
-            <ShoppingCart className="h-6 w-6" />
-            <span className="font-medium">Cart</span>
-          </a>
-        </Link>
       </div>
     </header>
   );
