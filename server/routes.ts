@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCartItemSchema, insertBrandSchema, insertProductSchema } from "@shared/schema"; // Added import
+import { insertCartItemSchema, insertBrandSchema, insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 import { syncStoreData } from './services/sheets';
 
@@ -127,8 +127,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
+      console.log('Fetching data for Google Sheets sync...');
       const brands = await storage.getBrands();
       const products = await storage.getProducts();
+
+      console.log('Data fetched:', {
+        brandsCount: brands.length,
+        productsCount: products.length,
+        spreadsheetId
+      });
 
       const success = await syncStoreData(spreadsheetId, brands, products);
 
@@ -138,6 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ message: "Failed to sync data" });
       }
     } catch (error) {
+      console.error('Error in sync-sheets endpoint:', error);
       res.status(500).json({ message: "Error syncing data with Google Sheets" });
     }
   });

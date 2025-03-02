@@ -19,6 +19,8 @@ try {
 const sheets = google.sheets({ version: 'v4', auth: client });
 
 export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[]) {
+  console.log('Creating/updating sheets for brands:', brands.map(b => b.name).join(', '));
+
   // Update brands overview sheet
   await sheets.spreadsheets.values.update({
     spreadsheetId,
@@ -31,14 +33,18 @@ export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[
 
   // Create or update individual brand sheets
   for (const brand of brands) {
+    console.log(`Processing sheet for brand: ${brand.name}`);
     const sheetName = `${brand.name} Products`;
+
     // Check if sheet exists
     try {
       await sheets.spreadsheets.values.get({
         spreadsheetId,
         range: `'${sheetName}'!A1:A1`
       });
+      console.log(`Sheet "${sheetName}" already exists`);
     } catch (error) {
+      console.log(`Creating new sheet "${sheetName}"`);
       // Sheet doesn't exist, create it
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
@@ -67,6 +73,7 @@ export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[
 }
 
 export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string) {
+  console.log('Syncing brands overview...');
   const values = brands.map(brand => [
     brand.id,
     brand.name,
@@ -80,9 +87,11 @@ export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string)
     valueInputOption: 'RAW',
     requestBody: { values }
   });
+  console.log(`Synced ${values.length} brands to overview sheet`);
 }
 
 export async function syncBrandProducts(brand: Brand, products: Product[], spreadsheetId: string) {
+  console.log(`Syncing products for brand: ${brand.name}`);
   const brandProducts = products.filter(product => product.brandId === brand.id);
   const values = brandProducts.map(product => [
     product.id,
@@ -99,10 +108,16 @@ export async function syncBrandProducts(brand: Brand, products: Product[], sprea
     valueInputOption: 'RAW',
     requestBody: { values }
   });
+  console.log(`Synced ${values.length} products for brand ${brand.name}`);
 }
 
 export async function syncStoreData(spreadsheetId: string, brands: Brand[], products: Product[]) {
   try {
+    console.log('Starting store data sync...');
+    console.log('Using spreadsheet ID:', spreadsheetId);
+    console.log('Found brands:', brands.length);
+    console.log('Found products:', products.length);
+
     // Create or update all necessary sheets
     await createOrUpdateSheets(spreadsheetId, brands);
 
@@ -114,6 +129,7 @@ export async function syncStoreData(spreadsheetId: string, brands: Brand[], prod
       await syncBrandProducts(brand, products, spreadsheetId);
     }
 
+    console.log('Store data sync completed successfully');
     return true;
   } catch (error) {
     console.error('Error syncing with Google Sheets:', error);
