@@ -48,13 +48,14 @@ export default function StorePage() {
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Store data synced with Google Sheets",
+        description: "Store data synced with Google Sheets. Check the 'store-data' sheet for your data.",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Error syncing sheets:", error); // Added error logging
       toast({
         title: "Error",
-        description: "Failed to sync data with Google Sheets",
+        description: "Failed to sync data. Make sure you've shared the sheet with e-commerce-sheet@e-commerce-sheet.iam.gserviceaccount.com",
         variant: "destructive",
       });
     },

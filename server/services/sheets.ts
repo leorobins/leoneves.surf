@@ -18,86 +18,32 @@ try {
 
 const sheets = google.sheets({ version: 'v4', auth: client });
 
-async function createSheetIfNotExists(spreadsheetId: string, sheetTitle: string) {
+async function clearAndWriteRange(spreadsheetId: string, range: string, values: any[][]) {
   try {
-    // Try to get the sheet first
-    await sheets.spreadsheets.values.get({
+    // Clear the range first
+    await sheets.spreadsheets.values.clear({
       spreadsheetId,
-      range: `${sheetTitle}!A1`
+      range,
     });
-    console.log(`Sheet "${sheetTitle}" already exists`);
-  } catch (error) {
-    console.log(`Creating new sheet "${sheetTitle}"`);
-    try {
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [{
-            addSheet: {
-              properties: {
-                title: sheetTitle
-              }
-            }
-          }]
-        }
-      });
-      console.log(`Successfully created sheet "${sheetTitle}"`);
-    } catch (error) {
-      console.error(`Error creating sheet "${sheetTitle}":`, error);
-      throw error;
-    }
-  }
-}
+    console.log(`Cleared range: ${range}`);
 
-export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[]) {
-  console.log('Creating/updating sheets for brands:', brands.map(b => b.name).join(', '));
-
-  // Create Brands_Overview sheet
-  await createSheetIfNotExists(spreadsheetId, 'Brands_Overview');
-
-  // Set headers for Brands_Overview
-  try {
+    // Write new values
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: 'Brands_Overview!A1:D1',
+      range,
       valueInputOption: 'RAW',
-      requestBody: {
-        values: [['ID', 'Name', 'Description', 'Image URL']]
-      }
+      requestBody: { values },
     });
-    console.log('Updated headers for Brands_Overview sheet');
+    console.log(`Updated range: ${range} with ${values.length} rows`);
   } catch (error) {
-    console.error('Error updating Brands_Overview headers:', error);
+    console.error(`Error updating range ${range}:`, error);
     throw error;
-  }
-
-  // Create sheets for each brand
-  for (const brand of brands) {
-    const sheetName = `${brand.name}_Products`.replace(/[^a-zA-Z0-9_]/g, '_');
-    console.log(`Processing sheet for brand: ${brand.name} (sheet name: ${sheetName})`);
-
-    await createSheetIfNotExists(spreadsheetId, sheetName);
-
-    try {
-      // Set headers for the brand's product sheet
-      await sheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: `${sheetName}!A1:F1`,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [['ID', 'Name', 'Description', 'Price', 'Stock', 'Image URL']]
-        }
-      });
-      console.log(`Updated headers for ${sheetName} sheet`);
-    } catch (error) {
-      console.error(`Error updating ${sheetName} headers:`, error);
-      throw error;
-    }
   }
 }
 
-export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string) {
-  console.log('Syncing brands overview...');
+async function writeBrandsData(spreadsheetId: string, brands: Brand[]) {
+  console.log('Writing brands data...');
+  const headers = [['ID', 'Name', 'Description', 'Image URL']];
   const values = brands.map(brand => [
     brand.id,
     brand.name,
@@ -106,42 +52,32 @@ export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string)
   ]);
 
   try {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: 'Brands_Overview!A2',
-      valueInputOption: 'RAW',
-      requestBody: { values }
-    });
-    console.log(`Synced ${values.length} brands to overview sheet`);
+    await clearAndWriteRange(spreadsheetId, 'store-data!A1:D100', [...headers, ...values]);
+    console.log(`Successfully wrote ${brands.length} brands`);
   } catch (error) {
-    console.error('Error syncing brands overview:', error);
+    console.error('Error writing brands data:', error);
     throw error;
   }
 }
 
-export async function syncBrandProducts(brand: Brand, products: Product[], spreadsheetId: string) {
-  console.log(`Syncing products for brand: ${brand.name}`);
-  const sheetName = `${brand.name}_Products`.replace(/[^a-zA-Z0-9_]/g, '_');
-  const brandProducts = products.filter(product => product.brandId === brand.id);
-  const values = brandProducts.map(product => [
+async function writeProductsData(spreadsheetId: string, products: Product[]) {
+  console.log('Writing products data...');
+  const headers = [['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL']];
+  const values = products.map(product => [
     product.id,
     product.name,
     product.description,
     product.price,
     product.stock,
+    product.brandId,
     product.image
   ]);
 
   try {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `${sheetName}!A2`,
-      valueInputOption: 'RAW',
-      requestBody: { values }
-    });
-    console.log(`Synced ${values.length} products for brand ${brand.name}`);
+    await clearAndWriteRange(spreadsheetId, 'store-data!F1:L100', [...headers, ...values]);
+    console.log(`Successfully wrote ${products.length} products`);
   } catch (error) {
-    console.error(`Error syncing products for ${brand.name}:`, error);
+    console.error('Error writing products data:', error);
     throw error;
   }
 }
@@ -153,16 +89,11 @@ export async function syncStoreData(spreadsheetId: string, brands: Brand[], prod
     console.log('Found brands:', brands.length);
     console.log('Found products:', products.length);
 
-    // Create or update all necessary sheets
-    await createOrUpdateSheets(spreadsheetId, brands);
+    // Write brands data
+    await writeBrandsData(spreadsheetId, brands);
 
-    // Sync brands overview
-    await syncBrandsOverview(brands, spreadsheetId);
-
-    // Sync each brand's products
-    for (const brand of brands) {
-      await syncBrandProducts(brand, products, spreadsheetId);
-    }
+    // Write products data
+    await writeProductsData(spreadsheetId, products);
 
     console.log('Store data sync completed successfully');
     return true;
