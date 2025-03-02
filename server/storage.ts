@@ -9,6 +9,7 @@ export interface IStorage {
   // Brands
   getBrands(): Promise<Brand[]>;
   getBrand(id: number): Promise<Brand | undefined>;
+  createBrand(brand: InsertBrand): Promise<Brand>;
 
   // Cart
   getCartItems(sessionId: string): Promise<CartItem[]>;
@@ -234,6 +235,13 @@ export class MemStorage implements IStorage {
 
   async getBrand(id: number): Promise<Brand | undefined> {
     return this.brands.get(id);
+  }
+
+  async createBrand(brand: InsertBrand): Promise<Brand> {
+    const id = this.currentBrandId++;
+    const newBrand: Brand = { ...brand, id };
+    this.brands.set(id, newBrand);
+    return newBrand;
   }
 
   // Cart methods
