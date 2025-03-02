@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertCartItemSchema, insertBrandSchema, insertProductSchema } from "@shared/schema"; // Added import
 import { z } from "zod";
+import { syncStoreData } from './services/sheets';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Products
@@ -114,6 +115,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const id = parseInt(req.params.id);
     await storage.removeFromCart(id);
     res.status(204).send();
+  });
+
+  // Add this to the existing routes
+  app.post("/api/sync-sheets", async (req, res) => {
+    try {
+      const { spreadsheetId } = req.body;
+
+      if (!spreadsheetId) {
+        res.status(400).json({ message: "Spreadsheet ID is required" });
+        return;
+      }
+
+      const brands = await storage.getBrands();
+      const products = await storage.getProducts();
+
+      const success = await syncStoreData(spreadsheetId, brands, products);
+
+      if (success) {
+        res.json({ message: "Data synced successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to sync data" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Error syncing data with Google Sheets" });
+    }
   });
 
   const httpServer = createServer(app);
