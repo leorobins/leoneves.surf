@@ -5,7 +5,7 @@ import { type Brand, type Product } from '@shared/schema';
 // Initialize Google Sheets client
 let client: JWT;
 try {
-  const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!, 'base64').toString());
+  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!);
   client = new JWT({
     email: credentials.client_email,
     key: credentials.private_key,
