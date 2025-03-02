@@ -81,8 +81,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto py-8 px-4">
         <div className="grid grid-cols-1 md:grid-cols-[1fr,400px] gap-8">
-          {/* Main Product Image */}
-          <div>
+          {/* Main Product Image with Back Button */}
+          <div className="relative">
+            <button 
+              onClick={() => setLocation(-1)}
+              className="absolute left-4 top-4 z-10 hover:text-white/70"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
             <div className="aspect-[4/5] overflow-hidden">
               <img
                 src={product.data.image}
@@ -100,17 +106,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Product Details */}
           <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-6">
-                <button 
-                  onClick={() => setLocation(-1)}
-                  className="hover:text-white/70"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <div>
-                  <h1 className="text-xl font-normal lowercase mb-2">{product.data.name}</h1>
-                  <p className="text-lg">${product.data.price}</p>
-                </div>
+              <div>
+                <h1 className="text-xl font-normal lowercase mb-2">{product.data.name}</h1>
+                <p className="text-lg">${product.data.price}</p>
               </div>
               <p className="text-sm text-white/70 mt-4">Shipping calculated at checkout.</p>
             </div>
