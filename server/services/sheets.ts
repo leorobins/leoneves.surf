@@ -24,7 +24,7 @@ export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[
   // Update brands overview sheet
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: 'Brands Overview!A1:D1',
+    range: 'Brands_Overview!A1:D1',
     valueInputOption: 'RAW',
     requestBody: {
       values: [['ID', 'Name', 'Description', 'Image URL']]
@@ -34,13 +34,13 @@ export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[
   // Create or update individual brand sheets
   for (const brand of brands) {
     console.log(`Processing sheet for brand: ${brand.name}`);
-    const sheetName = `${brand.name} Products`;
+    const sheetName = `${brand.name}_Products`.replace(/\s+/g, '_');
 
     // Check if sheet exists
     try {
       await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: `'${sheetName}'!A1:A1`
+        range: `${sheetName}!A1:A1`
       });
       console.log(`Sheet "${sheetName}" already exists`);
     } catch (error) {
@@ -63,7 +63,7 @@ export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[
     // Set headers for the brand's product sheet
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `'${sheetName}'!A1:F1`,
+      range: `${sheetName}!A1:F1`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [['ID', 'Name', 'Description', 'Price', 'Stock', 'Image URL']]
@@ -83,7 +83,7 @@ export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string)
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: 'Brands Overview!A2',
+    range: 'Brands_Overview!A2',
     valueInputOption: 'RAW',
     requestBody: { values }
   });
@@ -92,6 +92,7 @@ export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string)
 
 export async function syncBrandProducts(brand: Brand, products: Product[], spreadsheetId: string) {
   console.log(`Syncing products for brand: ${brand.name}`);
+  const sheetName = `${brand.name}_Products`.replace(/\s+/g, '_');
   const brandProducts = products.filter(product => product.brandId === brand.id);
   const values = brandProducts.map(product => [
     product.id,
@@ -104,7 +105,7 @@ export async function syncBrandProducts(brand: Brand, products: Product[], sprea
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `'${brand.name} Products'!A2`,
+    range: `${sheetName}!A2`,
     valueInputOption: 'RAW',
     requestBody: { values }
   });
