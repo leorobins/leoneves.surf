@@ -50,7 +50,7 @@ export function NewProductDialog() {
       name: "",
       description: "",
       image: "",
-      price: "",
+      price: "0",
       stock: 0,
       brandId: undefined,
     },
@@ -103,12 +103,13 @@ export function NewProductDialog() {
 
   const createProduct = useMutation({
     mutationFn: async (data: InsertProduct) => {
-      await apiRequest("POST", "/api/products", {
+      const transformedData = {
         ...data,
-        price: parseFloat(data.price),
-        stock: parseInt(data.stock as unknown as string),
-        brandId: parseInt(data.brandId as unknown as string),
-      });
+        price: parseFloat(data.price.toString()),
+        stock: parseInt(data.stock.toString(), 10),
+        brandId: parseInt(data.brandId!.toString(), 10),
+      };
+      await apiRequest("POST", "/api/products", transformedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
@@ -192,7 +193,9 @@ export function NewProductDialog() {
                   <FormItem>
                     <FormLabel>Brand</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        form.setValue("brandId", parseInt(value, 10));
+                      }}
                       defaultValue={field.value?.toString()}
                     >
                       <FormControl>
@@ -227,6 +230,9 @@ export function NewProductDialog() {
                         {...field}
                         type="number"
                         step="0.01"
+                        onChange={(e) => {
+                          form.setValue("price", e.target.value);
+                        }}
                         className="bg-transparent border-white/20"
                         placeholder="29.99"
                       />
@@ -245,6 +251,9 @@ export function NewProductDialog() {
                       <Input
                         {...field}
                         type="number"
+                        onChange={(e) => {
+                          form.setValue("stock", parseInt(e.target.value, 10));
+                        }}
                         className="bg-transparent border-white/20"
                         placeholder="100"
                       />
