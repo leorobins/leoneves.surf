@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import ProductPage from "@/pages/product";
 import Cart from "@/pages/cart";
 import BrandPage from "@/pages/brand";
+import StorePage from "@/pages/store";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/product/:id" component={ProductPage} />
       <Route path="/cart" component={Cart} />
       <Route path="/brand/:id" component={BrandPage} />
+      <Route path="/store" component={StorePage} />
       <Route component={NotFound} />
     </Switch>
   );
