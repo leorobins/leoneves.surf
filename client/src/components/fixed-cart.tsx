@@ -53,20 +53,13 @@ export function FixedCart() {
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col gap-2">
-        <button 
-          className="w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={itemCount === 0}
-        >
-          checkout
-        </button>
-        <Link href="/" className="w-full">
-          <a className="block w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors">
-            shop
-          </a>
-        </Link>
-      </div>
+      {/* Action */}
+      <button 
+        className="w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={itemCount === 0}
+      >
+        checkout
+      </button>
     </div>
   );
 }
