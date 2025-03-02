@@ -52,7 +52,7 @@ export function NewProductDialog() {
       image: "",
       price: "0",
       stock: 0,
-      brandId: undefined,
+      brandId: 0,
     },
   });
 
@@ -105,7 +105,7 @@ export function NewProductDialog() {
     mutationFn: async (data: InsertProduct) => {
       const transformedData = {
         ...data,
-        price: parseFloat(data.price.toString()),
+        price: parseFloat(data.price.toString()).toFixed(2),
         stock: parseInt(data.stock.toString(), 10),
         brandId: parseInt(data.brandId!.toString(), 10),
       };
