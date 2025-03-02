@@ -1,9 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Brand, type Product } from "@shared/schema";
-import { Table } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Plus } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 
 export default function StorePage() {
   const brands = useQuery<Brand[]>({
@@ -44,19 +52,19 @@ export default function StorePage() {
           <h2 className="text-xl font-normal mb-4 lowercase">Brands</h2>
           <div className="border border-white/20">
             <Table>
-              <Table.Header>
-                <Table.Row>
-                  <Table.Head>Name</Table.Head>
-                  <Table.Head>Description</Table.Head>
-                  <Table.Head>Actions</Table.Head>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {brands.data?.map((brand) => (
-                  <Table.Row key={brand.id}>
-                    <Table.Cell>{brand.name}</Table.Cell>
-                    <Table.Cell>{brand.description}</Table.Cell>
-                    <Table.Cell>
+                  <TableRow key={brand.id}>
+                    <TableCell>{brand.name}</TableCell>
+                    <TableCell>{brand.description}</TableCell>
+                    <TableCell>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -73,10 +81,10 @@ export default function StorePage() {
                           Delete
                         </Button>
                       </div>
-                    </Table.Cell>
-                  </Table.Row>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </Table.Body>
+              </TableBody>
             </Table>
           </div>
         </div>
@@ -86,25 +94,25 @@ export default function StorePage() {
           <h2 className="text-xl font-normal mb-4 lowercase">Products</h2>
           <div className="border border-white/20">
             <Table>
-              <Table.Header>
-                <Table.Row>
-                  <Table.Head>Name</Table.Head>
-                  <Table.Head>Brand</Table.Head>
-                  <Table.Head>Price</Table.Head>
-                  <Table.Head>Stock</Table.Head>
-                  <Table.Head>Actions</Table.Head>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Brand</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {products.data?.map((product) => {
                   const brand = brands.data?.find(b => b.id === product.brandId);
                   return (
-                    <Table.Row key={product.id}>
-                      <Table.Cell>{product.name}</Table.Cell>
-                      <Table.Cell>{brand?.name}</Table.Cell>
-                      <Table.Cell>${product.price}</Table.Cell>
-                      <Table.Cell>{product.stock}</Table.Cell>
-                      <Table.Cell>
+                    <TableRow key={product.id}>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{brand?.name}</TableCell>
+                      <TableCell>${product.price}</TableCell>
+                      <TableCell>{product.stock}</TableCell>
+                      <TableCell>
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
@@ -121,10 +129,10 @@ export default function StorePage() {
                             Delete
                           </Button>
                         </div>
-                      </Table.Cell>
-                    </Table.Row>
+                      </TableCell>
+                    </TableRow>
                   )})}
-              </Table.Body>
+              </TableBody>
             </Table>
           </div>
         </div>
