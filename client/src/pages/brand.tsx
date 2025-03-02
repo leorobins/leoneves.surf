@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Product, type Brand } from "@shared/schema";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { FixedCart } from "@/components/fixed-cart";
 
 export default function BrandPage({ params }: { params: { id: string } }) {
+  const [, setLocation] = useLocation();
+
   const brand = useQuery<Brand>({
     queryKey: [`/api/brands/${params.id}`]
   });
@@ -42,9 +44,17 @@ export default function BrandPage({ params }: { params: { id: string } }) {
       <div className="container mx-auto py-8 px-4">
         {/* Brand Header */}
         <div className="mb-12">
-          <h1 className="text-2xl font-normal lowercase tracking-wide">
-            {brand.data.name}
-          </h1>
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => setLocation(-1)}
+              className="text-sm lowercase hover:text-white/70"
+            >
+              back
+            </button>
+            <h1 className="text-2xl font-normal lowercase tracking-wide">
+              {brand.data.name}
+            </h1>
+          </div>
         </div>
 
         {/* Product Grid */}
