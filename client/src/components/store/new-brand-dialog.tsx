@@ -44,6 +44,17 @@ export function NewBrandDialog() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: "Image file is too large. Please choose an image under 5MB.",
+          variant: "destructive"
+        });
+        e.target.value = '';
+        return;
+      }
+
       // Create a preview URL for the image
       const imageUrl = URL.createObjectURL(file);
       setPreviewImage(imageUrl);
