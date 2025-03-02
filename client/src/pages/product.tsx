@@ -100,17 +100,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Product Details */}
           <div className="space-y-6">
             <div>
-              <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-xl font-normal lowercase mb-2">{" " + product.data.name}</h1>
-                  <p className="text-lg">${product.data.price}</p>
-                </div>
+              <div className="flex items-center gap-6">
                 <button 
                   onClick={() => setLocation(-1)}
                   className="hover:text-white/70"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
+                <div>
+                  <h1 className="text-xl font-normal lowercase mb-2">{product.data.name}</h1>
+                  <p className="text-lg">${product.data.price}</p>
+                </div>
               </div>
               <p className="text-sm text-white/70 mt-4">Shipping calculated at checkout.</p>
             </div>
