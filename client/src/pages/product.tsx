@@ -6,6 +6,7 @@ import { FixedCart } from "@/components/fixed-cart";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ChevronLeft } from "lucide-react";
 
 const SIZES = ["28", "30", "32", "34", "36"];
 
@@ -106,9 +107,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 </div>
                 <button 
                   onClick={() => setLocation(-1)}
-                  className="text-sm lowercase hover:text-white/70"
+                  className="hover:text-white/70"
                 >
-                  back
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
               </div>
               <p className="text-sm text-white/70 mt-4">Shipping calculated at checkout.</p>
