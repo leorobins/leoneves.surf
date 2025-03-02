@@ -1,15 +1,15 @@
-import { products, categories, cartItems, type Product, type Category, type CartItem, type InsertProduct, type InsertCategory, type InsertCartItem } from "@shared/schema";
+import { products, brands, cartItems, type Product, type Brand, type CartItem, type InsertProduct, type InsertBrand, type InsertCartItem } from "@shared/schema";
 
 export interface IStorage {
   // Products
   getProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
-  getProductsByCategory(categoryId: number): Promise<Product[]>;
-  
-  // Categories
-  getCategories(): Promise<Category[]>;
-  getCategory(id: number): Promise<Category | undefined>;
-  
+  getProductsByBrand(brandId: number): Promise<Product[]>;
+
+  // Brands
+  getBrands(): Promise<Brand[]>;
+  getBrand(id: number): Promise<Brand | undefined>;
+
   // Cart
   getCartItems(sessionId: string): Promise<CartItem[]>;
   addToCart(item: InsertCartItem): Promise<CartItem>;
@@ -19,18 +19,18 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private products: Map<number, Product>;
-  private categories: Map<number, Category>;
+  private brands: Map<number, Brand>;
   private cartItems: Map<number, CartItem>;
   private currentProductId: number;
-  private currentCategoryId: number;
+  private currentBrandId: number;
   private currentCartItemId: number;
 
   constructor() {
     this.products = new Map();
-    this.categories = new Map();
+    this.brands = new Map();
     this.cartItems = new Map();
     this.currentProductId = 1;
-    this.currentCategoryId = 1;
+    this.currentBrandId = 1;
     this.currentCartItemId = 1;
 
     // Initialize with mock data
@@ -38,19 +38,33 @@ export class MemStorage implements IStorage {
   }
 
   private initializeMockData() {
-    // Categories
-    const mockCategories: InsertCategory[] = [
-      { name: "Electronics", image: "https://images.unsplash.com/photo-1558770147-a0e2842c5ea1" },
-      { name: "Fashion", image: "https://images.unsplash.com/photo-1558770147-68c0607adb26" },
-      { name: "Home", image: "https://images.unsplash.com/photo-1558770147-d2a384e1ad85" },
-      { name: "Sports", image: "https://images.unsplash.com/photo-1524871729950-c4e886edc1f9" },
-      { name: "Books", image: "https://images.unsplash.com/photo-1621777106818-aa0303a2adc7" },
-      { name: "Beauty", image: "https://images.unsplash.com/photo-1598845210582-699090239180" }
+    // Brands
+    const mockBrands: InsertBrand[] = [
+      { 
+        name: "Byndis", 
+        image: "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111",
+        description: "Premium athletic wear and sports equipment"
+      },
+      { 
+        name: "Sqhat", 
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+        description: "Innovative fashion and lifestyle products"
+      },
+      { 
+        name: "Uasty", 
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
+        description: "High-end electronics and accessories"
+      },
+      { 
+        name: "Sonrobin", 
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
+        description: "Luxury watches and jewelry"
+      }
     ];
 
-    mockCategories.forEach(category => {
-      const id = this.currentCategoryId++;
-      this.categories.set(id, { ...category, id });
+    mockBrands.forEach(brand => {
+      const id = this.currentBrandId++;
+      this.brands.set(id, { ...brand, id });
     });
 
     // Products
@@ -60,7 +74,7 @@ export class MemStorage implements IStorage {
         description: "Elegant timepiece with premium build quality",
         price: "199.99",
         image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
-        categoryId: 1,
+        brandId: 4, // Sonrobin
         stock: 50
       },
       {
@@ -68,10 +82,25 @@ export class MemStorage implements IStorage {
         description: "High-quality wireless headphones with noise cancellation",
         price: "149.99",
         image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-        categoryId: 1,
+        brandId: 3, // Uasty
         stock: 100
       },
-      // Add more mock products...
+      {
+        name: "Running Shoes",
+        description: "Professional grade running shoes",
+        price: "129.99",
+        image: "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111",
+        brandId: 1, // Byndis
+        stock: 75
+      },
+      {
+        name: "Fashion Sneakers",
+        description: "Trendy and comfortable sneakers",
+        price: "89.99",
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+        brandId: 2, // Sqhat
+        stock: 150
+      }
     ];
 
     mockProducts.forEach(product => {
@@ -89,19 +118,19 @@ export class MemStorage implements IStorage {
     return this.products.get(id);
   }
 
-  async getProductsByCategory(categoryId: number): Promise<Product[]> {
+  async getProductsByBrand(brandId: number): Promise<Product[]> {
     return Array.from(this.products.values()).filter(
-      product => product.categoryId === categoryId
+      product => product.brandId === brandId
     );
   }
 
-  // Category methods
-  async getCategories(): Promise<Category[]> {
-    return Array.from(this.categories.values());
+  // Brand methods
+  async getBrands(): Promise<Brand[]> {
+    return Array.from(this.brands.values());
   }
 
-  async getCategory(id: number): Promise<Category | undefined> {
-    return this.categories.get(id);
+  async getBrand(id: number): Promise<Brand | undefined> {
+    return this.brands.get(id);
   }
 
   // Cart methods
@@ -125,7 +154,7 @@ export class MemStorage implements IStorage {
   async updateCartItem(id: number, quantity: number): Promise<CartItem | undefined> {
     const item = this.cartItems.get(id);
     if (!item) return undefined;
-    
+
     const updated = { ...item, quantity };
     this.cartItems.set(id, updated);
     return updated;

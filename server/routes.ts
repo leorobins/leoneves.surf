@@ -21,16 +21,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(product);
   });
 
-  app.get("/api/products/category/:categoryId", async (req, res) => {
-    const categoryId = parseInt(req.params.categoryId);
-    const products = await storage.getProductsByCategory(categoryId);
+  app.get("/api/products/brand/:brandId", async (req, res) => {
+    const brandId = parseInt(req.params.brandId);
+    const products = await storage.getProductsByBrand(brandId);
     res.json(products);
   });
 
-  // Categories
-  app.get("/api/categories", async (req, res) => {
-    const categories = await storage.getCategories();
-    res.json(categories);
+  // Brands
+  app.get("/api/brands", async (req, res) => {
+    const brands = await storage.getBrands();
+    res.json(brands);
+  });
+
+  app.get("/api/brands/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const brand = await storage.getBrand(id);
+    if (!brand) {
+      res.status(404).json({ message: "Brand not found" });
+      return;
+    }
+    res.json(brand);
   });
 
   // Cart
@@ -58,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/cart/:id", async (req, res) => {
     const id = parseInt(req.params.id);
     const quantity = parseInt(req.body.quantity);
-    
+
     if (isNaN(quantity) || quantity < 1) {
       res.status(400).json({ message: "Invalid quantity" });
       return;
