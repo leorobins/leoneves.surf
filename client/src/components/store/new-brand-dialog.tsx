@@ -24,10 +24,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 
 export function NewBrandDialog() {
   const [open, setOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,6 +41,22 @@ export function NewBrandDialog() {
     },
   });
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a preview URL for the image
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
+
+      // Convert image to base64 for storage
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("image", reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createBrand = useMutation({
     mutationFn: async (data: InsertBrand) => {
       await apiRequest("POST", "/api/brands", data);
@@ -51,6 +68,7 @@ export function NewBrandDialog() {
         description: "The brand has been created successfully.",
       });
       form.reset();
+      setPreviewImage(null);
       setOpen(false);
     },
     onError: () => {
@@ -120,15 +138,27 @@ export function NewBrandDialog() {
             <FormField
               control={form.control}
               name="image"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
+                  <FormLabel>Brand Image</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      className="bg-transparent border-white/20"
-                      placeholder="https://example.com/image.jpg"
-                    />
+                    <div className="space-y-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="bg-transparent border-white/20 file:bg-white/10 file:text-white file:border-0 file:mr-4 file:px-4 file:py-2 hover:file:bg-white/20"
+                      />
+                      {previewImage && (
+                        <div className="aspect-[21/9] overflow-hidden border border-white/20">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
