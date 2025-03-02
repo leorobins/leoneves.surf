@@ -54,6 +54,19 @@ export function FixedCart() {
     return sum + (parseFloat(item.product.price) * item.quantity);
   }, 0);
 
+  // Format WhatsApp message
+  const formatWhatsAppMessage = () => {
+    const items = cartProducts.map(item => 
+      `${item.quantity}x ${item.product?.name} - $${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}`
+    ).join('\n');
+
+    const message = `Hello! I would like to order:\n\n${items}\n\nTotal: $${total.toFixed(2)} USD`;
+    return encodeURIComponent(message);
+  };
+
+  // WhatsApp redirect URL
+  const whatsappUrl = `https://wa.me/5521995873778?text=${formatWhatsAppMessage()}`;
+
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black border border-white/20 text-white p-4 w-[320px]">
       <div className="uppercase text-sm mb-2 font-light">CART</div>
@@ -89,12 +102,15 @@ export function FixedCart() {
       </div>
 
       {/* Action */}
-      <button 
-        className="w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={itemCount === 0}
+      <a 
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ pointerEvents: itemCount === 0 ? 'none' : 'auto', opacity: itemCount === 0 ? 0.5 : 1 }}
       >
         checkout
-      </button>
+      </a>
     </div>
   );
 }
