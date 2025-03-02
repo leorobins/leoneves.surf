@@ -9,7 +9,7 @@ export default function Home() {
   });
 
   return (
-    <div className="py-8">
+    <div>
       {/* Video Section */}
       <section className="mb-12">
         <div className="aspect-video w-full bg-zinc-900">
@@ -22,15 +22,15 @@ export default function Home() {
 
       {/* Brands Section */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Our Brands</h2>
+        <h2 className="text-2xl font-bold mb-6 px-8">Our Brands</h2>
         {brands.isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
             {Array(4).fill(0).map((_, i) => (
-              <Skeleton key={i} className="aspect-[21/9]" />
+              <Skeleton key={i} className="aspect-[21/9] rounded-none" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
             {brands.data?.map((brand) => (
               <BrandCard key={brand.id} brand={brand} />
             ))}

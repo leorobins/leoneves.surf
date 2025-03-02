@@ -10,7 +10,7 @@ export function BrandCard({ brand }: BrandCardProps) {
   return (
     <Link href={`/brand/${brand.id}`}>
       <a>
-        <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <Card className="overflow-hidden hover:shadow-lg transition-shadow rounded-none">
           <div className="aspect-[21/9] overflow-hidden">
             <img
               src={brand.image}
