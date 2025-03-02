@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type Product, type Brand } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { FixedCart } from "@/components/fixed-cart";
 
 export default function BrandPage({ params }: { params: { id: string } }) {
   const brand = useQuery<Brand>({
@@ -100,6 +101,9 @@ export default function BrandPage({ params }: { params: { id: string } }) {
           <a href="#" className="hover:text-white/70">contact</a>
         </div>
       </div>
+
+      {/* Fixed Cart */}
+      <FixedCart />
     </div>
   );
 }
