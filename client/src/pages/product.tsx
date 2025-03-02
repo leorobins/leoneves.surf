@@ -3,7 +3,7 @@ import { type Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { FixedCart } from "@/components/fixed-cart";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -13,6 +13,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const product = useQuery<Product>({
     queryKey: [`/api/products/${params.id}`]
@@ -103,7 +104,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   <h1 className="text-xl font-normal lowercase mb-2">{" " + product.data.name}</h1>
                   <p className="text-lg">${product.data.price}</p>
                 </div>
-                <Link href="/next" className="text-sm lowercase hover:text-white/70">next</Link>
+                <button 
+                  onClick={() => setLocation(-1)}
+                  className="text-sm lowercase hover:text-white/70"
+                >
+                  back
+                </button>
               </div>
               <p className="text-sm text-white/70 mt-4">Shipping calculated at checkout.</p>
             </div>
