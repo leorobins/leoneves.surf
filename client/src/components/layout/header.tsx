@@ -1,12 +1,9 @@
 import { Link } from "wouter";
-import { ShoppingCart, Search, Moon, Sun } from "lucide-react";
+import { ShoppingCart, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/components/theme-provider";
 
 export function Header() {
-  const { theme, setTheme } = useTheme();
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center gap-4">
@@ -28,18 +25,6 @@ export function Header() {
             </Button>
           </form>
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
-          {theme === "dark" ? (
-            <Sun className="h-5 w-5" />
-          ) : (
-            <Moon className="h-5 w-5" />
-          )}
-        </Button>
 
         <Link href="/cart">
           <a className="flex items-center gap-2">
