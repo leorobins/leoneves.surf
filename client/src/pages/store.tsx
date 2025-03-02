@@ -18,6 +18,16 @@ import {
 import { NewBrandDialog } from "@/components/store/new-brand-dialog";
 import { NewProductDialog } from "@/components/store/new-product-dialog";
 
+function extractSpreadsheetId(input: string) {
+  // If it's a URL, extract the ID
+  if (input.includes('spreadsheets/d/')) {
+    const matches = input.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    return matches ? matches[1] : input;
+  }
+  // Otherwise return as is (assuming it's already an ID)
+  return input;
+}
+
 export default function StorePage() {
   const [spreadsheetId, setSpreadsheetId] = useState("");
   const { toast } = useToast();
@@ -32,7 +42,8 @@ export default function StorePage() {
 
   const syncSheets = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/sync-sheets", { spreadsheetId });
+      const cleanId = extractSpreadsheetId(spreadsheetId);
+      await apiRequest("POST", "/api/sync-sheets", { spreadsheetId: cleanId });
     },
     onSuccess: () => {
       toast({
