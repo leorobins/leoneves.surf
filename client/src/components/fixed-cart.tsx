@@ -1,14 +1,40 @@
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type CartItem, type Product } from "@shared/schema";
+import { X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export function FixedCart() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
   const cart = useQuery<CartItem[]>({
     queryKey: ["/api/cart"]
   });
 
   const products = useQuery<Product[]>({
     queryKey: ["/api/products"]
+  });
+
+  const deleteItem = useMutation({
+    mutationFn: async (cartItemId: number) => {
+      await apiRequest("DELETE", `/api/cart/${cartItemId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cart"] });
+      toast({
+        title: "Item removed",
+        description: "Item has been removed from your cart."
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Could not remove item. Please try again.",
+        variant: "destructive"
+      });
+    }
   });
 
   const itemCount = cart.data?.reduce((sum, item) => sum + item.quantity, 0) || 0;
@@ -40,7 +66,16 @@ export function FixedCart() {
               <span>{item.quantity}x</span>
               <span className="truncate">{item.product?.name}</span>
             </div>
-            <div>${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}</div>
+            <div className="flex items-center gap-2">
+              <span>${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}</span>
+              <button
+                onClick={() => deleteItem.mutate(item.id)}
+                disabled={deleteItem.isPending}
+                className="text-white/60 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
