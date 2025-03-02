@@ -54,15 +54,15 @@ export function FixedCart() {
       </div>
 
       {/* Actions */}
-      <div className="grid grid-cols-2 gap-px mt-4 bg-white/20">
+      <div className="flex flex-col gap-2">
         <button 
-          className="bg-black py-2 text-center text-sm hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={itemCount === 0}
         >
           checkout
         </button>
-        <Link href="/">
-          <a className="bg-black py-2 text-center text-sm hover:bg-white/10 transition-colors">
+        <Link href="/" className="w-full">
+          <a className="block w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors">
             shop
           </a>
         </Link>
