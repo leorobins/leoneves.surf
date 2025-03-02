@@ -18,57 +18,81 @@ try {
 
 const sheets = google.sheets({ version: 'v4', auth: client });
 
-export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[]) {
-  console.log('Creating/updating sheets for brands:', brands.map(b => b.name).join(', '));
-
-  // Update brands overview sheet
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: 'Brands_Overview!A1:D1',
-    valueInputOption: 'RAW',
-    requestBody: {
-      values: [['ID', 'Name', 'Description', 'Image URL']]
-    }
-  });
-
-  // Create or update individual brand sheets
-  for (const brand of brands) {
-    console.log(`Processing sheet for brand: ${brand.name}`);
-    const sheetName = `${brand.name}_Products`.replace(/\s+/g, '_');
-
-    // Check if sheet exists
+async function createSheetIfNotExists(spreadsheetId: string, sheetTitle: string) {
+  try {
+    // Try to get the sheet first
+    await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${sheetTitle}!A1`
+    });
+    console.log(`Sheet "${sheetTitle}" already exists`);
+  } catch (error) {
+    console.log(`Creating new sheet "${sheetTitle}"`);
     try {
-      await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: `${sheetName}!A1:A1`
-      });
-      console.log(`Sheet "${sheetName}" already exists`);
-    } catch (error) {
-      console.log(`Creating new sheet "${sheetName}"`);
-      // Sheet doesn't exist, create it
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
           requests: [{
             addSheet: {
               properties: {
-                title: sheetName
+                title: sheetTitle
               }
             }
           }]
         }
       });
+      console.log(`Successfully created sheet "${sheetTitle}"`);
+    } catch (error) {
+      console.error(`Error creating sheet "${sheetTitle}":`, error);
+      throw error;
     }
+  }
+}
 
-    // Set headers for the brand's product sheet
+export async function createOrUpdateSheets(spreadsheetId: string, brands: Brand[]) {
+  console.log('Creating/updating sheets for brands:', brands.map(b => b.name).join(', '));
+
+  // Create Brands_Overview sheet
+  await createSheetIfNotExists(spreadsheetId, 'Brands_Overview');
+
+  // Set headers for Brands_Overview
+  try {
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${sheetName}!A1:F1`,
+      range: 'Brands_Overview!A1:D1',
       valueInputOption: 'RAW',
       requestBody: {
-        values: [['ID', 'Name', 'Description', 'Price', 'Stock', 'Image URL']]
+        values: [['ID', 'Name', 'Description', 'Image URL']]
       }
     });
+    console.log('Updated headers for Brands_Overview sheet');
+  } catch (error) {
+    console.error('Error updating Brands_Overview headers:', error);
+    throw error;
+  }
+
+  // Create sheets for each brand
+  for (const brand of brands) {
+    const sheetName = `${brand.name}_Products`.replace(/[^a-zA-Z0-9_]/g, '_');
+    console.log(`Processing sheet for brand: ${brand.name} (sheet name: ${sheetName})`);
+
+    await createSheetIfNotExists(spreadsheetId, sheetName);
+
+    try {
+      // Set headers for the brand's product sheet
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${sheetName}!A1:F1`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [['ID', 'Name', 'Description', 'Price', 'Stock', 'Image URL']]
+        }
+      });
+      console.log(`Updated headers for ${sheetName} sheet`);
+    } catch (error) {
+      console.error(`Error updating ${sheetName} headers:`, error);
+      throw error;
+    }
   }
 }
 
@@ -81,18 +105,23 @@ export async function syncBrandsOverview(brands: Brand[], spreadsheetId: string)
     brand.image
   ]);
 
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: 'Brands_Overview!A2',
-    valueInputOption: 'RAW',
-    requestBody: { values }
-  });
-  console.log(`Synced ${values.length} brands to overview sheet`);
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: 'Brands_Overview!A2',
+      valueInputOption: 'RAW',
+      requestBody: { values }
+    });
+    console.log(`Synced ${values.length} brands to overview sheet`);
+  } catch (error) {
+    console.error('Error syncing brands overview:', error);
+    throw error;
+  }
 }
 
 export async function syncBrandProducts(brand: Brand, products: Product[], spreadsheetId: string) {
   console.log(`Syncing products for brand: ${brand.name}`);
-  const sheetName = `${brand.name}_Products`.replace(/\s+/g, '_');
+  const sheetName = `${brand.name}_Products`.replace(/[^a-zA-Z0-9_]/g, '_');
   const brandProducts = products.filter(product => product.brandId === brand.id);
   const values = brandProducts.map(product => [
     product.id,
@@ -103,13 +132,18 @@ export async function syncBrandProducts(brand: Brand, products: Product[], sprea
     product.image
   ]);
 
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `${sheetName}!A2`,
-    valueInputOption: 'RAW',
-    requestBody: { values }
-  });
-  console.log(`Synced ${values.length} products for brand ${brand.name}`);
+  try {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!A2`,
+      valueInputOption: 'RAW',
+      requestBody: { values }
+    });
+    console.log(`Synced ${values.length} products for brand ${brand.name}`);
+  } catch (error) {
+    console.error(`Error syncing products for ${brand.name}:`, error);
+    throw error;
+  }
 }
 
 export async function syncStoreData(spreadsheetId: string, brands: Brand[], products: Product[]) {
