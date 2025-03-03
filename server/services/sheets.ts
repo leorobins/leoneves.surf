@@ -82,7 +82,9 @@ async function writeProductsData(spreadsheetId: string, products: Product[]) {
   }
 }
 
-export async function syncStoreData(spreadsheetId: string, brands: Brand[], products: Product[]) {
+export async function syncStoreData(brands: Brand[], products: Product[]) {
+  const spreadsheetId = process.env.SPREADSHEET_ID || '1B4725ciwmsgyatjgcjvpaKynUaDuDnAXGF0vwPwdLwg'; // Use environment variable if available, otherwise fallback
+
   try {
     console.log('Starting store data sync...');
     console.log('Using spreadsheet ID:', spreadsheetId);

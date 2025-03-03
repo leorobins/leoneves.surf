@@ -32,6 +32,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(data);
+
+      // Automatically sync with Google Sheets after creating a new product
+      const brands = await storage.getBrands();
+      const products = await storage.getProducts();
+      await syncStoreData(brands, products);
+
       res.json(product);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -62,6 +68,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const data = insertBrandSchema.parse(req.body);
       const brand = await storage.createBrand(data);
+
+      // Automatically sync with Google Sheets after creating a new brand
+      const brands = await storage.getBrands();
+      const products = await storage.getProducts();
+      await syncStoreData(brands, products);
+
       res.json(brand);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -117,27 +129,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   });
 
-  // Add this to the existing routes
+  // Manual sync endpoint (for testing)
   app.post("/api/sync-sheets", async (req, res) => {
     try {
-      const { spreadsheetId } = req.body;
-
-      if (!spreadsheetId) {
-        res.status(400).json({ message: "Spreadsheet ID is required" });
-        return;
-      }
-
       console.log('Fetching data for Google Sheets sync...');
       const brands = await storage.getBrands();
       const products = await storage.getProducts();
 
       console.log('Data fetched:', {
         brandsCount: brands.length,
-        productsCount: products.length,
-        spreadsheetId
+        productsCount: products.length
       });
 
-      const success = await syncStoreData(spreadsheetId, brands, products);
+      const success = await syncStoreData(brands, products);
 
       if (success) {
         res.json({ message: "Data synced successfully" });
