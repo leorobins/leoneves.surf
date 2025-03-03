@@ -27,7 +27,7 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="delacream-theme">
+    <ThemeProvider defaultTheme="system" storageKey="de-lacream-at-theme">
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen flex flex-col">
           <Header />
