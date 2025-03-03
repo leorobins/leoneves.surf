@@ -38,6 +38,12 @@ export default function StorePage() {
     return true;
   });
 
+  // Format price to show as currency
+  const formatPrice = (price: string | number) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return `$${numPrice.toFixed(2)}`;
+  };
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto py-8 px-4">
@@ -139,7 +145,7 @@ export default function StorePage() {
                     <TableRow key={product.id}>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>{brand?.name}</TableCell>
-                      <TableCell>${product.price}</TableCell>
+                      <TableCell>{formatPrice(product.price)}</TableCell>
                       <TableCell>{product.stock}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">

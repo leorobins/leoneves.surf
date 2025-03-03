@@ -226,16 +226,19 @@ export function NewProductDialog() {
                   <FormItem>
                     <FormLabel>Price</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="0.01"
-                        onChange={(e) => {
-                          form.setValue("price", e.target.value);
-                        }}
-                        className="bg-transparent border-white/20"
-                        placeholder="29.99"
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60">$</span>
+                        <Input
+                          {...field}
+                          type="number"
+                          step="0.01"
+                          onChange={(e) => {
+                            form.setValue("price", e.target.value);
+                          }}
+                          className="bg-transparent border-white/20 pl-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          placeholder="29.99"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -254,7 +257,7 @@ export function NewProductDialog() {
                         onChange={(e) => {
                           form.setValue("stock", parseInt(e.target.value, 10));
                         }}
-                        className="bg-transparent border-white/20"
+                        className="bg-transparent border-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="100"
                       />
                     </FormControl>
