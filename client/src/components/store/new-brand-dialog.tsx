@@ -24,7 +24,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Plus, Upload } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Plus } from "lucide-react";
 
 export function NewBrandDialog() {
   const [open, setOpen] = useState(false);
@@ -103,87 +104,89 @@ export function NewBrandDialog() {
           New Brand
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-black text-white border-white/20">
+      <DialogContent className="bg-black text-white border-white/20 max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Create New Brand</DialogTitle>
           <DialogDescription>
             Add a new brand to your store.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => createBrand.mutate(data))} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      className="bg-transparent border-white/20"
-                      placeholder="Brand name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      className="bg-transparent border-white/20"
-                      placeholder="Brand description"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="image"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Brand Image</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
+        <ScrollArea className="h-[calc(90vh-8rem)] pr-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit((data) => createBrand.mutate(data))} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
                       <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="bg-transparent border-white/20 file:bg-white/10 file:text-white file:border-0 file:mr-4 file:px-4 file:py-2 hover:file:bg-white/20"
+                        {...field}
+                        className="bg-transparent border-white/20"
+                        placeholder="Brand name"
                       />
-                      {previewImage && (
-                        <div className="aspect-[21/9] overflow-hidden border border-white/20">
-                          <img
-                            src={previewImage}
-                            alt="Preview"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              className="w-full bg-white text-black hover:bg-white/90"
-              disabled={createBrand.isPending}
-            >
-              {createBrand.isPending ? "Creating..." : "Create Brand"}
-            </Button>
-          </form>
-        </Form>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        className="bg-transparent border-white/20"
+                        placeholder="Brand description"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="image"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Brand Image</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="bg-transparent border-white/20 file:bg-white/10 file:text-white file:border-0 file:mr-4 file:px-4 file:py-2 hover:file:bg-white/20"
+                        />
+                        {previewImage && (
+                          <div className="aspect-[21/9] overflow-hidden border border-white/20">
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full bg-white text-black hover:bg-white/90"
+                disabled={createBrand.isPending}
+              >
+                {createBrand.isPending ? "Creating..." : "Create Brand"}
+              </Button>
+            </form>
+          </Form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
