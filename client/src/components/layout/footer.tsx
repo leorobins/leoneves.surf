@@ -1,31 +1,10 @@
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { Facebook, Twitter, Instagram, Youtube, MessageSquare } from "lucide-react";
 
 export function Footer() {
   return (
     <footer className="bg-black text-white pt-16 pb-8 px-4 border-t border-white/10">
       <div className="max-w-7xl mx-auto">
-        {/* Newsletter Section */}
-        <div className="mb-12">
-          <h3 className="uppercase text-sm mb-4">ASSINE NOSSA NEWSLETTER</h3>
-          <form className="max-w-md" onSubmit={(e) => e.preventDefault()}>
-            <div className="flex gap-2">
-              <Input 
-                type="email" 
-                placeholder="E-mail *"
-                className="bg-transparent border-white/20"
-              />
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                →
-              </Button>
-            </div>
-            <p className="text-xs mt-2 text-white/60">
-              Ao clicar em "Assinar", você confirma que leu e entendeu nossa Política de Privacidade e que deseja receber a newsletter e outras comunicações.
-            </p>
-          </form>
-        </div>
-
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Help Section */}
@@ -77,7 +56,7 @@ export function Footer() {
                 <a href="#" className="hover:text-white">Sustentabilidade</a>
               </li>
               <li>
-                <a href="/store" className="hover:text-white">Store Management</a>
+                <Link href="/store" className="hover:text-white">Store Management</Link>
               </li>
             </ul>
           </div>
