@@ -5,8 +5,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json({ limit: '10mb' }));  // Increase JSON payload limit
-app.use(express.urlencoded({ extended: false, limit: '10mb' }));  // Also increase URL-encoded limit
+app.use(express.json({ limit: '25mb' }));  // Increase JSON payload limit to 25MB
+app.use(express.urlencoded({ extended: false, limit: '25mb' }));  // Also increase URL-encoded limit to 25MB
 
 // Create MemoryStore instance
 const MemoryStoreSession = MemoryStore(session);

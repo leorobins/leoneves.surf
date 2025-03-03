@@ -145,11 +145,11 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
     }
 
     files.forEach(file => {
-      // Check file size (limit to 100MB)
-      if (file.size > 100 * 1024 * 1024) {
+      // Check file size (limit to 25MB)
+      if (file.size > 25 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: `File ${file.name} is too large. Please choose videos under 100MB.`,
+          description: `File ${file.name} is too large. Please choose videos under 25MB.`,
           variant: "destructive"
         });
         return;
