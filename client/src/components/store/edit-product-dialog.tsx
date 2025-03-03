@@ -112,15 +112,26 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
         price: parseFloat(data.price.toString()).toFixed(2),
         stock: parseInt(data.stock.toString(), 10),
         brandId: parseInt(data.brandId!.toString(), 10),
+        images: images, // Include all images in the update
       };
       await apiRequest("PATCH", `/api/products/${product.id}`, transformedData);
     },
     onSuccess: () => {
+      // Invalidate all products
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+
+      // Invalidate specific product
+      queryClient.invalidateQueries({ queryKey: [`/api/products/${product.id}`] });
+
+      // Invalidate brand-specific products
+      queryClient.invalidateQueries({ queryKey: [`/api/products/brand/${product.brandId}`] });
+
       toast({
         title: "Product updated",
         description: "The product has been updated successfully.",
       });
+      form.reset();
+      setImages([]);
       setOpen(false);
     },
     onError: () => {

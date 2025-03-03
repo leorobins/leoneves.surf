@@ -30,8 +30,18 @@ export function DeleteBrandDialog({ brand }: DeleteBrandDialogProps) {
       await apiRequest("DELETE", `/api/brands/${brand.id}`);
     },
     onSuccess: () => {
+      // Invalidate brands list
       queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
+
+      // Invalidate specific brand query
+      queryClient.invalidateQueries({ queryKey: [`/api/brands/${brand.id}`] });
+
+      // Invalidate products list as they might be affected
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+
+      // Invalidate brand-specific products
+      queryClient.invalidateQueries({ queryKey: [`/api/products/brand/${brand.id}`] });
+
       toast({
         title: "Brand deleted",
         description: "The brand and its products have been deleted.",

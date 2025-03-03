@@ -30,7 +30,15 @@ export function DeleteProductDialog({ product }: DeleteProductDialogProps) {
       await apiRequest("DELETE", `/api/products/${product.id}`);
     },
     onSuccess: () => {
+      // Invalidate all products
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+
+      // Invalidate specific product
+      queryClient.invalidateQueries({ queryKey: [`/api/products/${product.id}`] });
+
+      // Invalidate brand-specific products
+      queryClient.invalidateQueries({ queryKey: [`/api/products/brand/${product.brandId}`] });
+
       toast({
         title: "Product deleted",
         description: "The product has been deleted.",
