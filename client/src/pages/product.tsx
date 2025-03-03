@@ -9,10 +9,10 @@ import { apiRequest } from "@/lib/queryClient";
 import { ChevronLeft } from "lucide-react";
 import useEmblaCarousel from 'embla-carousel-react';
 
-const SIZES = ["28", "30", "32", "34", "36"];
+//const SIZES = ["28", "30", "32", "34", "36"];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
-  const [selectedSize, setSelectedSize] = useState(SIZES[0]);
+  const [selectedSize, setSelectedSize] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -57,11 +57,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     queryKey: ["/api/products"]
   });
 
+  // Get available sizes from product sizeStock
+  const availableSizes = product.data?.sizeStock?.filter(s => s.stock > 0).map(s => s.size) || [];
+
+  // Set initial selected size when data loads
+  useEffect(() => {
+    if (availableSizes.length > 0 && !selectedSize) {
+      setSelectedSize(availableSizes[0]);
+    }
+  }, [availableSizes, selectedSize]);
+
+  // Get current stock for selected size
+  const currentSizeStock = product.data?.sizeStock?.find(s => s.size === selectedSize)?.stock || 0;
+
+
   const addToCart = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/cart", {
         productId: parseInt(params.id),
         quantity: 1,
+        size: selectedSize,
       });
     },
     onSuccess: () => {
@@ -108,8 +123,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const productImages = product.data.images?.length > 0 
-    ? product.data.images 
+  const productImages = product.data.images?.length > 0
+    ? product.data.images
     : [product.data.image];
 
   const otherProducts = relatedProducts.data?.filter(p => p.id !== product.data.id).slice(0, 5) || [];
@@ -120,7 +135,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         <div className="grid grid-cols-1 md:grid-cols-[1fr,400px] gap-8">
           {/* Main Product Image with Back Button */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setLocation(`/brand/${product.data.brandId}`)}
               className="absolute left-4 top-4 z-10 hover:text-white/70"
             >
@@ -131,8 +146,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <div className="overflow-hidden" ref={mainViewRef}>
               <div className="flex aspect-[4/5] touch-pan-y">
                 {productImages.map((image, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="flex-[0_0_100%] min-w-0"
                   >
                     <img
@@ -181,12 +196,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <div className="space-y-4">
               <label className="text-sm lowercase">Size</label>
               <div className="grid grid-cols-1">
-                <select 
+                <select
                   value={selectedSize}
                   onChange={(e) => setSelectedSize(e.target.value)}
                   className="bg-zinc-700 text-white p-2 w-full lowercase"
                 >
-                  {SIZES.map(size => (
+                  {availableSizes.map(size => (
                     <option key={size} value={size}>{size}</option>
                   ))}
                 </select>
@@ -194,13 +209,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </div>
 
             {/* Add to Cart Button */}
-            <Button 
+            <Button
               className="w-full bg-zinc-700 hover:bg-zinc-600 text-white lowercase"
-              disabled={product.data.stock === 0 || addToCart.isPending}
+              disabled={currentSizeStock === 0 || addToCart.isPending}
               onClick={() => addToCart.mutate()}
             >
-              {product.data.stock === 0 ? "sold out" : 
-               addToCart.isPending ? "adding..." : "add to cart"}
+              {currentSizeStock === 0 ? "sold out" :
+                addToCart.isPending ? "adding..." : "add to cart"}
             </Button>
 
             {/* Product Description */}

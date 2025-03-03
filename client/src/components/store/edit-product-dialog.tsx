@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { type InsertProduct, type Product, type Brand, insertProductSchema } from "@shared/schema";
+import { type InsertProduct, type Product, type Brand, insertProductSchema, type SizeStock } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X } from "lucide-react";
+import { X, Plus, Minus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EditProductDialogProps {
@@ -41,6 +41,9 @@ interface EditProductDialogProps {
 export function EditProductDialog({ product }: EditProductDialogProps) {
   const [open, setOpen] = useState(false);
   const [images, setImages] = useState<string[]>([product.image]);
+  const [sizeStocks, setSizeStocks] = useState<SizeStock[]>(
+    product.sizeStock || []
+  );
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -105,6 +108,23 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
     }
   };
 
+  const addSize = () => {
+    setSizeStocks([...sizeStocks, { size: "", stock: 0 }]);
+  };
+
+  const removeSize = (index: number) => {
+    setSizeStocks(sizeStocks.filter((_, i) => i !== index));
+  };
+
+  const updateSizeStock = (index: number, field: keyof SizeStock, value: string | number) => {
+    const newSizeStocks = [...sizeStocks];
+    newSizeStocks[index] = {
+      ...newSizeStocks[index],
+      [field]: field === 'stock' ? parseInt(value.toString()) : value
+    };
+    setSizeStocks(newSizeStocks);
+  };
+
   const updateProduct = useMutation({
     mutationFn: async (data: InsertProduct) => {
       const transformedData = {
@@ -112,7 +132,8 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
         price: parseFloat(data.price.toString()).toFixed(2),
         stock: parseInt(data.stock.toString(), 10),
         brandId: parseInt(data.brandId!.toString(), 10),
-        images: images, // Include all images in the update
+        images: images,
+        sizeStock: sizeStocks,
       };
       await apiRequest("PATCH", `/api/products/${product.id}`, transformedData);
     },
@@ -277,6 +298,48 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                   </FormItem>
                 )}
               />
+              <FormItem>
+                <FormLabel>Size Stock</FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    {sizeStocks.map((sizeStock, index) => (
+                      <div key={index} className="flex gap-4 items-center">
+                        <Input
+                          value={sizeStock.size}
+                          onChange={(e) => updateSizeStock(index, 'size', e.target.value)}
+                          placeholder="Size"
+                          className="bg-transparent border-white/20 w-24"
+                        />
+                        <Input
+                          type="number"
+                          value={sizeStock.stock}
+                          onChange={(e) => updateSizeStock(index, 'stock', e.target.value)}
+                          placeholder="Stock"
+                          className="bg-transparent border-white/20 w-24"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => removeSize(index)}
+                          className="text-white border-white/20 hover:bg-white/10"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addSize}
+                      className="text-white border-white/20 hover:bg-white/10"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Size
+                    </Button>
+                  </div>
+                </FormControl>
+              </FormItem>
               <FormItem>
                 <FormLabel>Product Images (Max 10)</FormLabel>
                 <FormControl>
