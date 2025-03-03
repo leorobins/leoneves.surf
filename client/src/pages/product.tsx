@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FixedCart } from "@/components/fixed-cart";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import useEmblaCarousel from 'embla-carousel-react';
 
 const SIZES = ["28", "30", "32", "34", "36"];
@@ -18,7 +18,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [, setLocation] = useLocation();
 
   // Embla carousel setup
-  const [mainViewRef, mainEmbla] = useEmblaCarousel();
+  const [mainViewRef, mainEmbla] = useEmblaCarousel({ loop: true });
   const [thumbViewRef, thumbEmbla] = useEmblaCarousel({
     containScroll: "keepSnaps",
     dragFree: true,
@@ -26,27 +26,28 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const onThumbClick = useCallback(
-    (index: number) => {
-      if (!mainEmbla || !thumbEmbla) return;
-      mainEmbla.scrollTo(index);
-    },
-    [mainEmbla, thumbEmbla]
-  );
-
-  const onSelect = useCallback(() => {
+  // Sync thumbnail selection with main carousel
+  useEffect(() => {
     if (!mainEmbla || !thumbEmbla) return;
-    setSelectedIndex(mainEmbla.selectedScrollSnap());
-    thumbEmbla.scrollTo(mainEmbla.selectedScrollSnap());
+
+    mainEmbla.on('select', () => {
+      const index = mainEmbla.selectedScrollSnap();
+      setSelectedIndex(index);
+      thumbEmbla.scrollTo(index);
+    });
+
+    return () => {
+      mainEmbla.off('select');
+    };
   }, [mainEmbla, thumbEmbla]);
 
-  const scrollPrev = useCallback(() => {
-    if (mainEmbla) mainEmbla.scrollPrev();
-  }, [mainEmbla]);
-
-  const scrollNext = useCallback(() => {
-    if (mainEmbla) mainEmbla.scrollNext();
-  }, [mainEmbla]);
+  const onThumbClick = useCallback(
+    (index: number) => {
+      if (!mainEmbla) return;
+      mainEmbla.scrollTo(index);
+    },
+    [mainEmbla]
+  );
 
   const product = useQuery<Product>({
     queryKey: [`/api/products/${params.id}`]
@@ -127,10 +128,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </button>
 
             {/* Main Carousel */}
-            <div className="relative" ref={mainViewRef}>
-              <div className="aspect-[4/5] overflow-hidden flex" onScroll={onSelect}>
+            <div className="overflow-hidden" ref={mainViewRef}>
+              <div className="flex aspect-[4/5] touch-pan-y">
                 {productImages.map((image, index) => (
-                  <div key={index} className="flex-[0_0_100%] min-w-0">
+                  <div 
+                    key={index} 
+                    className="flex-[0_0_100%] min-w-0"
+                  >
                     <img
                       src={image}
                       alt={`${product.data.name} view ${index + 1}`}
@@ -139,26 +143,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                   </div>
                 ))}
               </div>
-              {productImages.length > 1 && (
-                <>
-                  <button
-                    onClick={scrollPrev}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full hover:bg-black/70"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={scrollNext}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 rounded-full hover:bg-black/70"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </>
-              )}
             </div>
 
             {/* Thumbnail Navigation */}
-            <div className="mt-4" ref={thumbViewRef}>
+            <div className="mt-4 overflow-hidden" ref={thumbViewRef}>
               <div className="flex gap-2">
                 {productImages.map((image, index) => (
                   <button
