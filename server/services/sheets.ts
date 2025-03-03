@@ -18,16 +18,51 @@ try {
 
 const sheets = google.sheets({ version: 'v4', auth: client });
 
-async function clearAndWriteRange(spreadsheetId: string, range: string, values: any[][]) {
+async function ensureSheetExists(spreadsheetId: string, sheetTitle: string) {
   try {
-    // Clear the range first
+    // Try to get the spreadsheet first
+    const spreadsheet = await sheets.spreadsheets.get({
+      spreadsheetId,
+    });
+
+    // Check if our sheet exists
+    const sheetExists = spreadsheet.data.sheets?.some(
+      sheet => sheet.properties?.title === sheetTitle
+    );
+
+    if (!sheetExists) {
+      console.log(`Creating sheet "${sheetTitle}"...`);
+      // Add the sheet
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [{
+            addSheet: {
+              properties: {
+                title: sheetTitle,
+              },
+            },
+          }],
+        },
+      });
+      console.log(`Created sheet "${sheetTitle}"`);
+    }
+  } catch (error) {
+    console.error('Error ensuring sheet exists:', error);
+    throw error;
+  }
+}
+
+async function writeToSheet(spreadsheetId: string, range: string, values: any[][]) {
+  try {
+    // Clear the existing content
     await sheets.spreadsheets.values.clear({
       spreadsheetId,
       range,
     });
     console.log(`Cleared range: ${range}`);
 
-    // Write new values
+    // Write the new values
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range,
@@ -36,66 +71,53 @@ async function clearAndWriteRange(spreadsheetId: string, range: string, values: 
     });
     console.log(`Updated range: ${range} with ${values.length} rows`);
   } catch (error) {
-    console.error(`Error updating range ${range}:`, error);
-    throw error;
-  }
-}
-
-async function writeBrandsData(spreadsheetId: string, brands: Brand[]) {
-  console.log('Writing brands data...');
-  const headers = [['ID', 'Name', 'Description', 'Image URL']];
-  const values = brands.map(brand => [
-    brand.id,
-    brand.name,
-    brand.description,
-    brand.image
-  ]);
-
-  try {
-    await clearAndWriteRange(spreadsheetId, 'store-data!A1:D100', [...headers, ...values]);
-    console.log(`Successfully wrote ${brands.length} brands`);
-  } catch (error) {
-    console.error('Error writing brands data:', error);
-    throw error;
-  }
-}
-
-async function writeProductsData(spreadsheetId: string, products: Product[]) {
-  console.log('Writing products data...');
-  const headers = [['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL']];
-  const values = products.map(product => [
-    product.id,
-    product.name,
-    product.description,
-    product.price,
-    product.stock,
-    product.brandId,
-    product.image
-  ]);
-
-  try {
-    await clearAndWriteRange(spreadsheetId, 'store-data!F1:L100', [...headers, ...values]);
-    console.log(`Successfully wrote ${products.length} products`);
-  } catch (error) {
-    console.error('Error writing products data:', error);
+    console.error('Error writing to sheet:', error);
     throw error;
   }
 }
 
 export async function syncStoreData(brands: Brand[], products: Product[]) {
-  const spreadsheetId = process.env.SPREADSHEET_ID || '1B4725ciwmsgyatjgcjvpaKynUaDuDnAXGF0vwPwdLwg'; // Use environment variable if available, otherwise fallback
+  const spreadsheetId = process.env.SPREADSHEET_ID || '1B4725ciwmsgyatjgcjvpaKynUaDuDnAXGF0vwPwdLwg';
+  const sheetName = 'store-data';
 
   try {
     console.log('Starting store data sync...');
-    console.log('Using spreadsheet ID:', spreadsheetId);
-    console.log('Found brands:', brands.length);
-    console.log('Found products:', products.length);
+    console.log(`Using spreadsheet ID: ${spreadsheetId}`);
+    console.log(`Using sheet name: ${sheetName}`);
 
-    // Write brands data
-    await writeBrandsData(spreadsheetId, brands);
+    // Ensure the sheet exists
+    await ensureSheetExists(spreadsheetId, sheetName);
 
-    // Write products data
-    await writeProductsData(spreadsheetId, products);
+    // Write brands data (columns A-D)
+    const brandsHeaders = [['ID', 'Name', 'Description', 'Image URL']];
+    const brandsData = brands.map(brand => [
+      brand.id,
+      brand.name,
+      brand.description,
+      brand.image
+    ]);
+    await writeToSheet(
+      spreadsheetId,
+      `${sheetName}!A1:D${brandsData.length + 1}`,
+      [...brandsHeaders, ...brandsData]
+    );
+
+    // Write products data (columns F-L)
+    const productsHeaders = [['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL']];
+    const productsData = products.map(product => [
+      product.id,
+      product.name,
+      product.description,
+      product.price,
+      product.stock,
+      product.brandId,
+      product.image
+    ]);
+    await writeToSheet(
+      spreadsheetId,
+      `${sheetName}!F1:L${productsData.length + 1}`,
+      [...productsHeaders, ...productsData]
+    );
 
     console.log('Store data sync completed successfully');
     return true;
