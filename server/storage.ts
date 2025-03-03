@@ -76,6 +76,12 @@ export class MemStorage implements IStorage {
         description: "Professional grade running shoes",
         price: "129.99",
         image: "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111",
+        images: [
+          "https://images.unsplash.com/photo-1515955656352-a1fa3ffcd111",
+          "https://images.unsplash.com/photo-1460353581641-37baddab0fa2",
+          "https://images.unsplash.com/photo-1491553895911-0055eca6402d",
+          "https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+        ],
         brandId: 1,
         stock: 75
       },

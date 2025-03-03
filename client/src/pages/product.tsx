@@ -12,6 +12,7 @@ const SIZES = ["28", "30", "32", "34", "36"];
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState(SIZES[0]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -75,6 +76,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     );
   }
 
+  // Update the image handling section
+  const displayImage = selectedImage || product.data.image;
+  const productImages = product.data.images?.length > 0 
+    ? product.data.images 
+    : [product.data.image];
+
   const otherProducts = relatedProducts.data?.filter(p => p.id !== product.data.id).slice(0, 5) || [];
 
   return (
@@ -91,14 +98,28 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </button>
             <div className="aspect-[4/5] overflow-hidden">
               <img
-                src={product.data.image}
+                src={displayImage}
                 alt={product.data.name}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="grid grid-cols-6 gap-2 mt-4">
-              {Array(6).fill(0).map((_, i) => (
-                <button key={i} className="aspect-square bg-white/10"></button>
+              {productImages.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(image)}
+                  className={`aspect-square relative overflow-hidden ${displayImage === image ? 'ring-2 ring-white' : ''}`}
+                >
+                  <img
+                    src={image}
+                    alt={`Product view ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+              {/* Fill remaining slots with empty boxes */}
+              {Array(Math.max(0, 6 - productImages.length)).fill(0).map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square bg-white/10"></div>
               ))}
             </div>
           </div>
