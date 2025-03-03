@@ -129,28 +129,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   });
 
-  // Manual sync endpoint (for testing)
+  // Modified sync-sheets endpoint
   app.post("/api/sync-sheets", async (req, res) => {
     try {
-      console.log('Fetching data for Google Sheets sync...');
+      console.log('Starting Google Sheets sync process...');
+
       const brands = await storage.getBrands();
       const products = await storage.getProducts();
 
-      console.log('Data fetched:', {
+      console.log('Retrieved data:', {
         brandsCount: brands.length,
         productsCount: products.length
       });
 
-      const success = await syncStoreData(brands, products);
+      await syncStoreData(brands, products);
 
-      if (success) {
-        res.json({ message: "Data synced successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to sync data" });
-      }
+      res.json({
+        success: true,
+        message: "Data synced successfully",
+        details: {
+          brandsCount: brands.length,
+          productsCount: products.length,
+          timestamp: new Date().toISOString()
+        }
+      });
     } catch (error) {
       console.error('Error in sync-sheets endpoint:', error);
-      res.status(500).json({ message: "Error syncing data with Google Sheets" });
+
+      let errorMessage = "Failed to sync data with Google Sheets";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      res.status(500).json({
+        success: false,
+        message: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? error : undefined
+      });
     }
   });
 

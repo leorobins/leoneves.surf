@@ -20,35 +20,33 @@ const sheets = google.sheets({ version: 'v4', auth: client });
 
 /**
  * Syncs store data (brands and products) to Google Sheets
- * Uses a predefined sheet named 'store-data'
  */
 export async function syncStoreData(brands: Brand[], products: Product[]) {
   try {
-    // Use environment variable for spreadsheet ID if available
-    const spreadsheetId = process.env.SPREADSHEET_ID;
-    if (!spreadsheetId) {
+    if (!process.env.SPREADSHEET_ID) {
       throw new Error('SPREADSHEET_ID environment variable is not set');
     }
 
     console.log('Starting store data sync...');
-    console.log('Found:', {
-      brands: brands.length,
-      products: products.length
-    });
 
-    // Create the values arrays for both brands and products
-    const brandsValues = [
-      ['Brand ID', 'Brand Name', 'Description', 'Image URL'], // Headers
+    // Combine all data into a single array
+    const allData = [
+      // Headers
+      ['Store Data - Updated: ' + new Date().toLocaleString()],
+      [''],
+      ['Brands'],
+      ['ID', 'Name', 'Description', 'Image URL'],
+      // Brands data
       ...brands.map(brand => [
         brand.id,
         brand.name,
         brand.description || '',
         brand.image || ''
-      ])
-    ];
-
-    const productsValues = [
-      ['Product ID', 'Product Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL'], // Headers
+      ]),
+      [''],  // Empty row for separation
+      ['Products'],
+      ['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL'],
+      // Products data
       ...products.map(product => [
         product.id,
         product.name,
@@ -60,37 +58,34 @@ export async function syncStoreData(brands: Brand[], products: Product[]) {
       ])
     ];
 
-    // Update both sections in a single batch update
-    const requests = [
-      {
-        range: 'store-data!A1:D' + (brands.length + 1),
-        values: brandsValues
-      },
-      {
-        range: 'store-data!F1:L' + (products.length + 1),
-        values: productsValues
-      }
-    ];
+    console.log('Preparing to write data:', {
+      totalRows: allData.length,
+      brandsCount: brands.length,
+      productsCount: products.length
+    });
 
-    console.log('Sending batch update to Google Sheets...');
-    await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId,
+    // Write all data in a single update
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      range: 'store-data!A1',  // Start at A1, will expand as needed
+      valueInputOption: 'RAW',
       requestBody: {
-        valueInputOption: 'RAW',
-        data: requests
+        values: allData
       }
     });
 
+    console.log('Sheets API Response:', response.data);
     console.log('Successfully synced data to Google Sheets');
     return true;
   } catch (error) {
     console.error('Failed to sync with Google Sheets:', error);
     if (error instanceof Error) {
-      console.error({
+      console.error('Error details:', {
+        name: error.name,
         message: error.message,
         stack: error.stack
       });
     }
-    return false;
+    throw error;  // Re-throw to handle in routes
   }
 }
