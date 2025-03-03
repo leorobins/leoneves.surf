@@ -34,7 +34,7 @@ export default function Home() {
             muted
             playsInline
           >
-            <source src="/attached_assets/videomain.mp4" type="video/mp4" />
+            <source src="./attached_assets/videomain.mp4" type="video/mp4" />
           </video>
           {/* Sound control button */}
           <Button
