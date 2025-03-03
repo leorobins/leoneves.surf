@@ -83,7 +83,13 @@ export class MemStorage implements IStorage {
           "https://images.unsplash.com/photo-1542291026-7eec264c27ff"
         ],
         brandId: 1,
-        stock: 75
+        sizeStock: [
+          { size: "38", stock: 10 },
+          { size: "39", stock: 15 },
+          { size: "40", stock: 20 },
+          { size: "41", stock: 25 },
+          { size: "42", stock: 5 }
+        ]
       },
       {
         name: "Training Jacket",
@@ -91,7 +97,7 @@ export class MemStorage implements IStorage {
         price: "89.99",
         image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea",
         brandId: 1,
-        stock: 0 // Sold out
+        sizeStock: [{size: "S", stock: 0}, {size: "M", stock: 0}, {size: "L", stock: 0}, {size: "XL", stock: 0}]
       },
       {
         name: "Sports Bag",
@@ -99,7 +105,7 @@ export class MemStorage implements IStorage {
         price: "59.99",
         image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62",
         brandId: 1,
-        stock: 100
+        sizeStock: [{size: "One Size", stock: 100}]
       },
       {
         name: "Performance Shorts",
@@ -107,7 +113,7 @@ export class MemStorage implements IStorage {
         price: "45.99",
         image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f",
         brandId: 1,
-        stock: 0 // Sold out
+        sizeStock: [{size: "S", stock: 0}, {size: "M", stock: 0}, {size: "L", stock: 0}, {size: "XL", stock: 0}]
       },
 
       // Sqhat Products
@@ -117,7 +123,13 @@ export class MemStorage implements IStorage {
         price: "89.99",
         image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
         brandId: 2,
-        stock: 150
+        sizeStock: [
+          { size: "38", stock: 20 },
+          { size: "39", stock: 25 },
+          { size: "40", stock: 30 },
+          { size: "41", stock: 35 },
+          { size: "42", stock: 10 }
+        ]
       },
       {
         name: "Designer Hoodie",
@@ -125,7 +137,7 @@ export class MemStorage implements IStorage {
         price: "120.00",
         image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7",
         brandId: 2,
-        stock: 0 // Sold out
+        sizeStock: [{size: "S", stock: 0}, {size: "M", stock: 0}, {size: "L", stock: 0}, {size: "XL", stock: 0}]
       },
       {
         name: "Urban Backpack",
@@ -133,7 +145,7 @@ export class MemStorage implements IStorage {
         price: "79.99",
         image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62",
         brandId: 2,
-        stock: 85
+        sizeStock: [{size: "One Size", stock: 85}]
       },
       {
         name: "Graphic T-Shirt",
@@ -141,7 +153,7 @@ export class MemStorage implements IStorage {
         price: "39.99",
         image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a",
         brandId: 2,
-        stock: 200
+        sizeStock: [{size: "S", stock: 50}, {size: "M", stock: 50}, {size: "L", stock: 50}, {size: "XL", stock: 50}]
       },
 
       // Uasty Products
@@ -151,7 +163,7 @@ export class MemStorage implements IStorage {
         price: "149.99",
         image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
         brandId: 3,
-        stock: 100
+        sizeStock: [{size: "One Size", stock: 100}]
       },
       {
         name: "Smart Speaker",
@@ -159,7 +171,7 @@ export class MemStorage implements IStorage {
         price: "199.99",
         image: "https://images.unsplash.com/photo-1589492477829-5e65395b66cc",
         brandId: 3,
-        stock: 0 // Sold out
+        sizeStock: [{size: "One Size", stock: 0}]
       },
       {
         name: "Fitness Tracker",
@@ -167,7 +179,7 @@ export class MemStorage implements IStorage {
         price: "79.99",
         image: "https://images.unsplash.com/photo-1557438159-51eec7a6c9e8",
         brandId: 3,
-        stock: 150
+        sizeStock: [{size: "One Size", stock: 150}]
       },
       {
         name: "Wireless Earbuds",
@@ -175,7 +187,7 @@ export class MemStorage implements IStorage {
         price: "129.99",
         image: "https://images.unsplash.com/photo-1574920162043-b872873f19c8",
         brandId: 3,
-        stock: 0 // Sold out
+        sizeStock: [{size: "One Size", stock: 0}]
       },
 
       // Sonrobin Products
@@ -185,7 +197,7 @@ export class MemStorage implements IStorage {
         price: "199.99",
         image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30",
         brandId: 4,
-        stock: 50
+        sizeStock: [{size: "One Size", stock: 50}]
       },
       {
         name: "Gold Bracelet",
@@ -193,7 +205,7 @@ export class MemStorage implements IStorage {
         price: "299.99",
         image: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0",
         brandId: 4,
-        stock: 0 // Sold out
+        sizeStock: [{size: "One Size", stock: 0}]
       },
       {
         name: "Silver Necklace",
@@ -201,7 +213,7 @@ export class MemStorage implements IStorage {
         price: "159.99",
         image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338",
         brandId: 4,
-        stock: 75
+        sizeStock: [{size: "One Size", stock: 75}]
       },
       {
         name: "Diamond Ring",
@@ -209,7 +221,7 @@ export class MemStorage implements IStorage {
         price: "499.99",
         image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
         brandId: 4,
-        stock: 0 // Sold out
+        sizeStock: [{size: "One Size", stock: 0}]
       }
     ];
 

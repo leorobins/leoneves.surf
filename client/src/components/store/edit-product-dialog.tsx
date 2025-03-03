@@ -40,7 +40,9 @@ interface EditProductDialogProps {
 
 export function EditProductDialog({ product }: EditProductDialogProps) {
   const [open, setOpen] = useState(false);
-  const [images, setImages] = useState<string[]>([product.image]);
+  const [images, setImages] = useState<string[]>(
+    product.images?.length > 0 ? product.images : [product.image]
+  );
   const [sizeStocks, setSizeStocks] = useState<SizeStock[]>(
     product.sizeStock || []
   );
@@ -58,8 +60,8 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       description: product.description,
       image: product.image,
       price: product.price.toString(),
-      stock: product.stock,
       brandId: product.brandId,
+      sizeStock: product.sizeStock || [],
     },
   });
 
@@ -130,7 +132,6 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       const transformedData = {
         ...data,
         price: parseFloat(data.price.toString()).toFixed(2),
-        stock: parseInt(data.stock.toString(), 10),
         brandId: parseInt(data.brandId!.toString(), 10),
         images: images,
         sizeStock: sizeStocks,
@@ -265,34 +266,10 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                           {...field}
                           type="number"
                           step="0.01"
-                          onChange={(e) => {
-                            form.setValue("price", e.target.value);
-                          }}
                           className="bg-transparent border-white/20 pl-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           placeholder="29.99"
                         />
                       </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="stock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stock</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        onChange={(e) => {
-                          form.setValue("stock", parseInt(e.target.value, 10));
-                        }}
-                        className="bg-transparent border-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        placeholder="100"
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
