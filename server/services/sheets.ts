@@ -18,64 +18,6 @@ try {
 
 const sheets = google.sheets({ version: 'v4', auth: client });
 
-async function ensureSheetExists(spreadsheetId: string, sheetTitle: string) {
-  try {
-    // Try to get the spreadsheet first
-    const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId,
-    });
-
-    // Check if our sheet exists
-    const sheetExists = spreadsheet.data.sheets?.some(
-      sheet => sheet.properties?.title === sheetTitle
-    );
-
-    if (!sheetExists) {
-      console.log(`Creating sheet "${sheetTitle}"...`);
-      // Add the sheet
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [{
-            addSheet: {
-              properties: {
-                title: sheetTitle,
-              },
-            },
-          }],
-        },
-      });
-      console.log(`Created sheet "${sheetTitle}"`);
-    }
-  } catch (error) {
-    console.error('Error ensuring sheet exists:', error);
-    throw error;
-  }
-}
-
-async function writeToSheet(spreadsheetId: string, range: string, values: any[][]) {
-  try {
-    // Clear the existing content
-    await sheets.spreadsheets.values.clear({
-      spreadsheetId,
-      range,
-    });
-    console.log(`Cleared range: ${range}`);
-
-    // Write the new values
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range,
-      valueInputOption: 'RAW',
-      requestBody: { values },
-    });
-    console.log(`Updated range: ${range} with ${values.length} rows`);
-  } catch (error) {
-    console.error('Error writing to sheet:', error);
-    throw error;
-  }
-}
-
 export async function syncStoreData(brands: Brand[], products: Product[]) {
   const spreadsheetId = process.env.SPREADSHEET_ID || '1B4725ciwmsgyatjgcjvpaKynUaDuDnAXGF0vwPwdLwg';
   const sheetName = 'store-data';
@@ -85,44 +27,65 @@ export async function syncStoreData(brands: Brand[], products: Product[]) {
     console.log(`Using spreadsheet ID: ${spreadsheetId}`);
     console.log(`Using sheet name: ${sheetName}`);
 
-    // Ensure the sheet exists
-    await ensureSheetExists(spreadsheetId, sheetName);
+    // Write brands data
+    const brandsData = [
+      ['ID', 'Name', 'Description', 'Image URL'], // Headers
+      ...brands.map(brand => [
+        brand.id,
+        brand.name,
+        brand.description,
+        brand.image
+      ])
+    ];
 
-    // Write brands data (columns A-D)
-    const brandsHeaders = [['ID', 'Name', 'Description', 'Image URL']];
-    const brandsData = brands.map(brand => [
-      brand.id,
-      brand.name,
-      brand.description,
-      brand.image
-    ]);
-    await writeToSheet(
+    console.log('Writing brands data:', brandsData);
+    await sheets.spreadsheets.values.update({
       spreadsheetId,
-      `${sheetName}!A1:D${brandsData.length + 1}`,
-      [...brandsHeaders, ...brandsData]
-    );
+      range: `${sheetName}!A1:D${brands.length + 1}`,
+      valueInputOption: 'RAW',
+      requestBody: {
+        values: brandsData
+      }
+    });
+    console.log('Successfully wrote brands data');
 
-    // Write products data (columns F-L)
-    const productsHeaders = [['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL']];
-    const productsData = products.map(product => [
-      product.id,
-      product.name,
-      product.description,
-      product.price,
-      product.stock,
-      product.brandId,
-      product.image
-    ]);
-    await writeToSheet(
+    // Write products data
+    const productsData = [
+      ['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL'], // Headers
+      ...products.map(product => [
+        product.id,
+        product.name,
+        product.description,
+        product.price,
+        product.stock,
+        product.brandId,
+        product.image
+      ])
+    ];
+
+    console.log('Writing products data:', productsData);
+    await sheets.spreadsheets.values.update({
       spreadsheetId,
-      `${sheetName}!F1:L${productsData.length + 1}`,
-      [...productsHeaders, ...productsData]
-    );
+      range: `${sheetName}!F1:L${products.length + 1}`,
+      valueInputOption: 'RAW',
+      requestBody: {
+        values: productsData
+      }
+    });
+    console.log('Successfully wrote products data');
 
     console.log('Store data sync completed successfully');
     return true;
   } catch (error) {
     console.error('Error syncing with Google Sheets:', error);
+    // Log more detailed error information
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
     return false;
   }
 }
