@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ChevronLeft } from "lucide-react";
 import useEmblaCarousel from 'embla-carousel-react';
+import { Video } from "lucide-react";
 
 //const SIZES = ["28", "30", "32", "34", "36"];
 
@@ -127,6 +128,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     ? product.data.images
     : [product.data.image];
 
+  const allMedia = [
+    ...productImages,
+    ...(product.data?.videos || [])
+  ];
+
   const otherProducts = relatedProducts.data?.filter(p => p.id !== product.data.id).slice(0, 5) || [];
 
   return (
@@ -145,16 +151,24 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {/* Main Carousel */}
             <div className="overflow-hidden" ref={mainViewRef}>
               <div className="flex aspect-[4/5] touch-pan-y">
-                {productImages.map((image, index) => (
+                {allMedia.map((mediaUrl, index) => (
                   <div
                     key={index}
                     className="flex-[0_0_100%] min-w-0"
                   >
-                    <img
-                      src={image}
-                      alt={`${product.data.name} view ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    {mediaUrl.startsWith('data:video') || mediaUrl.match(/\.(mp4|webm|ogg)$/) ? (
+                      <video
+                        src={mediaUrl}
+                        controls
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={mediaUrl}
+                        alt={`${product.data.name} view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -163,7 +177,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             {/* Thumbnail Navigation */}
             <div className="mt-4 overflow-hidden" ref={thumbViewRef}>
               <div className="flex gap-2">
-                {productImages.map((image, index) => (
+                {allMedia.map((mediaUrl, index) => (
                   <button
                     key={index}
                     onClick={() => onThumbClick(index)}
@@ -171,11 +185,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                       index === selectedIndex ? 'ring-2 ring-white' : ''
                     }`}
                   >
-                    <img
-                      src={image}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    {mediaUrl.startsWith('data:video') || mediaUrl.match(/\.(mp4|webm|ogg)$/) ? (
+                      <div className="w-full h-full bg-black flex items-center justify-center">
+                        <Video className="h-6 w-6" />
+                      </div>
+                    ) : (
+                      <img
+                        src={mediaUrl}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </button>
                 ))}
               </div>

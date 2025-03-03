@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus, Minus } from "lucide-react";
+import { X, Plus, Minus, Video } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EditProductDialogProps {
@@ -45,6 +45,9 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
   );
   const [sizeStocks, setSizeStocks] = useState<SizeStock[]>(
     product.sizeStock || []
+  );
+  const [videos, setVideos] = useState<string[]>(
+    product.videos || []
   );
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -127,6 +130,43 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
     setSizeStocks(newSizeStocks);
   };
 
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+
+    // Check if adding new files would exceed the limit
+    if (videos.length + files.length > 5) {
+      toast({
+        title: "Error",
+        description: "You can only upload up to 5 videos.",
+        variant: "destructive"
+      });
+      e.target.value = '';
+      return;
+    }
+
+    files.forEach(file => {
+      // Check file size (limit to 100MB)
+      if (file.size > 100 * 1024 * 1024) {
+        toast({
+          title: "Error",
+          description: `File ${file.name} is too large. Please choose videos under 100MB.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVideos(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos(prev => prev.filter((_, i) => i !== index));
+  };
+
   const updateProduct = useMutation({
     mutationFn: async (data: InsertProduct) => {
       const transformedData = {
@@ -134,6 +174,7 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
         price: parseFloat(data.price.toString()).toFixed(2),
         brandId: parseInt(data.brandId!.toString(), 10),
         images: images,
+        videos: videos,
         sizeStock: sizeStocks,
       };
       await apiRequest("PATCH", `/api/products/${product.id}`, transformedData);
@@ -154,6 +195,7 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       });
       form.reset();
       setImages([]);
+      setVideos([]);
       setOpen(false);
     },
     onError: () => {
@@ -339,6 +381,39 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+              <FormItem>
+                <FormLabel>Product Videos (Max 5)</FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    <Input
+                      type="file"
+                      accept="video/*"
+                      multiple
+                      onChange={handleVideoUpload}
+                      className="bg-transparent border-white/20 file:bg-white/10 file:text-white file:border-0 file:mr-4 file:px-4 file:py-2 hover:file:bg-white/20"
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      {videos.map((video, index) => (
+                        <div key={index} className="relative">
+                          <video
+                            src={video}
+                            className="w-full aspect-video object-cover rounded-md"
+                            controls
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeVideo(index)}
                             className="absolute top-2 right-2 p-1 bg-black/50 rounded-full hover:bg-black/70"
                           >
                             <X className="h-4 w-4" />

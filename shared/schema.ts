@@ -22,6 +22,7 @@ export const products = pgTable("products", {
   price: numeric("price").notNull(),
   image: text("image").notNull(),
   images: text("images").array().default([]),
+  videos: text("videos").array().default([]),
   brandId: integer("brand_id").notNull(),
   sizeStock: jsonb("size_stock").$type<SizeStock[]>().default([]),
 });
