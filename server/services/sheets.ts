@@ -3,20 +3,49 @@ import { JWT } from 'google-auth-library';
 import { type Brand, type Product } from '@shared/schema';
 
 // Initialize Google Sheets client
-let client: JWT;
-try {
-  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY!);
-  client = new JWT({
-    email: credentials.client_email,
-    key: credentials.private_key,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-} catch (error) {
-  console.error('Error initializing Google Sheets client:', error);
-  throw error;
+let sheetsClient: ReturnType<typeof google.sheets>;
+
+function initializeGoogleSheets() {
+  try {
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY environment variable is not set');
+    }
+
+    // Parse and validate service account credentials
+    let credentials;
+    try {
+      credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+
+      if (!credentials.client_email || !credentials.private_key) {
+        throw new Error('Service account credentials missing required fields');
+      }
+
+      console.log('Successfully parsed service account credentials');
+    } catch (parseError) {
+      console.error('Failed to parse service account credentials:', parseError);
+      throw new Error('Invalid service account credentials format');
+    }
+
+    // Create JWT client
+    const client = new JWT({
+      email: credentials.client_email,
+      key: credentials.private_key,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+
+    // Initialize sheets client
+    sheetsClient = google.sheets({ version: 'v4', auth: client });
+    console.log('Successfully initialized Google Sheets client');
+
+    return true;
+  } catch (error) {
+    console.error('Error initializing Google Sheets:', error);
+    throw error;
+  }
 }
 
-const sheets = google.sheets({ version: 'v4', auth: client });
+// Initialize on module load
+initializeGoogleSheets();
 
 /**
  * Syncs store data (brands and products) to Google Sheets
@@ -27,26 +56,33 @@ export async function syncStoreData(brands: Brand[], products: Product[]) {
       throw new Error('SPREADSHEET_ID environment variable is not set');
     }
 
-    console.log('Starting store data sync...');
+    if (!sheetsClient) {
+      throw new Error('Google Sheets client not initialized');
+    }
 
-    // Combine all data into a single array
-    const allData = [
-      // Headers
-      ['Store Data - Updated: ' + new Date().toLocaleString()],
+    console.log('Starting store data sync...');
+    console.log(`Using spreadsheet ID: ${process.env.SPREADSHEET_ID}`);
+    console.log('Data to sync:', {
+      brandsCount: brands.length,
+      productsCount: products.length
+    });
+
+    // Prepare data to write
+    const data = [
+      ['Store Data'],
+      ['Last Updated:', new Date().toLocaleString()],
       [''],
       ['Brands'],
       ['ID', 'Name', 'Description', 'Image URL'],
-      // Brands data
       ...brands.map(brand => [
         brand.id,
         brand.name,
         brand.description || '',
         brand.image || ''
       ]),
-      [''],  // Empty row for separation
+      [''],
       ['Products'],
       ['ID', 'Name', 'Description', 'Price', 'Stock', 'Brand ID', 'Image URL'],
-      // Products data
       ...products.map(product => [
         product.id,
         product.name,
@@ -58,20 +94,20 @@ export async function syncStoreData(brands: Brand[], products: Product[]) {
       ])
     ];
 
-    console.log('Preparing to write data:', {
-      totalRows: allData.length,
-      brandsCount: brands.length,
-      productsCount: products.length
+    // Clear existing content
+    console.log('Clearing existing sheet content...');
+    await sheetsClient.spreadsheets.values.clear({
+      spreadsheetId: process.env.SPREADSHEET_ID,
+      range: 'store-data!A:Z'
     });
 
-    // Write all data in a single update
-    const response = await sheets.spreadsheets.values.update({
+    // Write new data
+    console.log('Writing new data to sheet...');
+    const response = await sheetsClient.spreadsheets.values.update({
       spreadsheetId: process.env.SPREADSHEET_ID,
-      range: 'store-data!A1',  // Start at A1, will expand as needed
+      range: 'store-data!A1',
       valueInputOption: 'RAW',
-      requestBody: {
-        values: allData
-      }
+      requestBody: { values: data }
     });
 
     console.log('Sheets API Response:', response.data);
@@ -86,6 +122,6 @@ export async function syncStoreData(brands: Brand[], products: Product[]) {
         stack: error.stack
       });
     }
-    throw error;  // Re-throw to handle in routes
+    throw error;
   }
 }

@@ -34,9 +34,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const product = await storage.createProduct(data);
 
       // Automatically sync with Google Sheets after creating a new product
-      const brands = await storage.getBrands();
-      const products = await storage.getProducts();
-      await syncStoreData(brands, products);
+      try {
+        const brands = await storage.getBrands();
+        const products = await storage.getProducts();
+        await syncStoreData(brands, products);
+        console.log('Successfully synced after creating product');
+      } catch (syncError) {
+        console.error('Failed to sync after creating product:', syncError);
+        // Continue even if sync fails
+      }
 
       res.json(product);
     } catch (error) {
@@ -70,9 +76,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const brand = await storage.createBrand(data);
 
       // Automatically sync with Google Sheets after creating a new brand
-      const brands = await storage.getBrands();
-      const products = await storage.getProducts();
-      await syncStoreData(brands, products);
+      try {
+        const brands = await storage.getBrands();
+        const products = await storage.getProducts();
+        await syncStoreData(brands, products);
+        console.log('Successfully synced after creating brand');
+      } catch (syncError) {
+        console.error('Failed to sync after creating brand:', syncError);
+        // Continue even if sync fails
+      }
 
       res.json(brand);
     } catch (error) {
@@ -129,18 +141,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).send();
   });
 
-  // Modified sync-sheets endpoint
+  // Manual sync endpoint
   app.post("/api/sync-sheets", async (req, res) => {
     try {
-      console.log('Starting Google Sheets sync process...');
-
+      console.log('Starting manual Google Sheets sync...');
       const brands = await storage.getBrands();
       const products = await storage.getProducts();
-
-      console.log('Retrieved data:', {
-        brandsCount: brands.length,
-        productsCount: products.length
-      });
 
       await syncStoreData(brands, products);
 
@@ -156,10 +162,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in sync-sheets endpoint:', error);
 
-      let errorMessage = "Failed to sync data with Google Sheets";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Unknown error occurred while syncing data";
 
       res.status(500).json({
         success: false,
