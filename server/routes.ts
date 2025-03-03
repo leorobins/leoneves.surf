@@ -41,6 +41,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Updated product endpoints
+  app.patch("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertProductSchema.parse(req.body);
+      const product = await storage.updateProduct(id, data);
+      if (!product) {
+        res.status(404).json({ message: "Product not found" });
+        return;
+      }
+      res.json(product);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data" });
+        return;
+      }
+      throw error;
+    }
+  });
+
+  app.delete("/api/products/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProduct(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      res.status(500).json({ message: "Could not delete product" });
+    }
+  });
+
   // Brands
   app.get("/api/brands", async (req, res) => {
     const brands = await storage.getBrands();

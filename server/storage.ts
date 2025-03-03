@@ -6,6 +6,8 @@ export interface IStorage {
   getProduct(id: number): Promise<Product | undefined>;
   getProductsByBrand(brandId: number): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: InsertProduct): Promise<Product | undefined>;
+  deleteProduct(id: number): Promise<void>;
 
   // Brands
   getBrands(): Promise<Brand[]>;
@@ -238,6 +240,28 @@ export class MemStorage implements IStorage {
     return newProduct;
   }
 
+  async updateProduct(id: number, product: InsertProduct): Promise<Product | undefined> {
+    const existingProduct = this.products.get(id);
+    if (!existingProduct) return undefined;
+
+    const updatedProduct: Product = { ...product, id };
+    this.products.set(id, updatedProduct);
+    return updatedProduct;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    this.products.delete(id);
+
+    // Also remove this product from any cart items
+    const cartItemsToDelete = Array.from(this.cartItems.values())
+      .filter(item => item.productId === id)
+      .map(item => item.id);
+
+    cartItemsToDelete.forEach(cartItemId => {
+      this.cartItems.delete(cartItemId);
+    });
+  }
+
   // Brand methods
   async getBrands(): Promise<Brand[]> {
     return Array.from(this.brands.values());
@@ -254,7 +278,6 @@ export class MemStorage implements IStorage {
     return newBrand;
   }
 
-  // Add updateBrand method
   async updateBrand(id: number, brand: InsertBrand): Promise<Brand | undefined> {
     const existingBrand = this.brands.get(id);
     if (!existingBrand) return undefined;
