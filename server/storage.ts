@@ -12,6 +12,7 @@ export interface IStorage {
   getBrand(id: number): Promise<Brand | undefined>;
   createBrand(brand: InsertBrand): Promise<Brand>;
   updateBrand(id: number, brand: InsertBrand): Promise<Brand | undefined>;
+  deleteBrand(id: number): Promise<void>;
 
   // Cart
   getCartItems(sessionId: string): Promise<CartItem[]>;
@@ -261,6 +262,18 @@ export class MemStorage implements IStorage {
     const updatedBrand: Brand = { ...brand, id };
     this.brands.set(id, updatedBrand);
     return updatedBrand;
+  }
+
+  async deleteBrand(id: number): Promise<void> {
+    this.brands.delete(id);
+    // Also delete associated products
+    const productsToDelete = Array.from(this.products.values())
+      .filter(product => product.brandId === id)
+      .map(product => product.id);
+
+    productsToDelete.forEach(productId => {
+      this.products.delete(productId);
+    });
   }
 
   // Cart methods

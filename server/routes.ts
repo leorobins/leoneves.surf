@@ -91,6 +91,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Added DELETE endpoint for brands
+  app.delete("/api/brands/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBrand(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting brand:', error);
+      res.status(500).json({ message: "Could not delete brand" });
+    }
+  });
+
   // Cart
   app.get("/api/cart", async (req, res) => {
     const sessionId = req.session.id;
