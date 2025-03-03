@@ -71,6 +71,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Added PATCH endpoint for updating brands
+  app.patch("/api/brands/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const data = insertBrandSchema.parse(req.body);
+      const updatedBrand = await storage.updateBrand(id, data);
+      if (!updatedBrand) {
+        res.status(404).json({ message: "Brand not found" });
+        return;
+      }
+      res.json(updatedBrand);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data" });
+        return;
+      }
+      throw error;
+    }
+  });
+
   // Cart
   app.get("/api/cart", async (req, res) => {
     const sessionId = req.session.id;

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NewBrandDialog } from "@/components/store/new-brand-dialog";
+import { EditBrandDialog } from "@/components/store/edit-brand-dialog";
 import { NewProductDialog } from "@/components/store/new-product-dialog";
 
 export default function StorePage() {
@@ -74,13 +75,7 @@ export default function StorePage() {
                     <TableCell>{brand.description}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-white border-white/20 hover:bg-white/10"
-                        >
-                          Edit
-                        </Button>
+                        <EditBrandDialog brand={brand} />
                         <Button
                           variant="outline"
                           size="sm"
