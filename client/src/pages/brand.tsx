@@ -60,31 +60,36 @@ export default function BrandPage({ params }: { params: { id: string } }) {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/10">
-          {products.data.map((product) => (
-            <Link key={product.id} href={`/product/${product.id}`}>
-              <a className="block aspect-square relative group bg-black">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <p className="text-white text-sm font-light tracking-wide lowercase px-4 text-center">
-                    {product.name}
-                  </p>
-                </div>
-                {/* Sold out overlay */}
-                {product.stock === 0 && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <p className="text-white text-sm font-light tracking-wide lowercase">
-                      sold out
+          {products.data.map((product) => {
+            // Check if all sizes have 0 stock
+            const isSoldOut = !product.sizeStock?.some(s => s.stock > 0);
+
+            return (
+              <Link key={product.id} href={`/product/${product.id}`}>
+                <a className="block aspect-square relative group bg-black">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <p className="text-white text-sm font-light tracking-wide lowercase px-4 text-center">
+                      {product.name}
                     </p>
                   </div>
-                )}
-              </a>
-            </Link>
-          ))}
+                  {/* Sold out overlay */}
+                  {isSoldOut && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <p className="text-white text-sm font-light tracking-wide lowercase">
+                        sold out
+                      </p>
+                    </div>
+                  )}
+                </a>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Fixed Cart */}
