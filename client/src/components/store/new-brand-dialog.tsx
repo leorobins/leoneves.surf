@@ -49,21 +49,17 @@ export function NewBrandDialog() {
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: "Image file is too large. Please choose an image under 5MB.",
+          description: "Image size should be less than 5MB",
           variant: "destructive"
         });
-        e.target.value = '';
         return;
       }
 
-      // Create a preview URL for the image
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
-
-      // Convert image to base64 for storage
       const reader = new FileReader();
       reader.onloadend = () => {
-        form.setValue("image", reader.result as string);
+        const result = reader.result as string;
+        setPreviewImage(result);
+        form.setValue("image", result);
       };
       reader.readAsDataURL(file);
     }
@@ -71,13 +67,13 @@ export function NewBrandDialog() {
 
   const createBrand = useMutation({
     mutationFn: async (data: InsertBrand) => {
-      await apiRequest("POST", "/api/brands", data);
+      await apiRequest("POST", "/api/categories", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       toast({
-        title: "Brand created",
-        description: "The brand has been created successfully.",
+        title: "Category created",
+        description: "The category has been created successfully.",
       });
       form.reset();
       setPreviewImage(null);
@@ -86,7 +82,7 @@ export function NewBrandDialog() {
     onError: () => {
       toast({
         title: "Error",
-        description: "Could not create brand. Please try again.",
+        description: "Could not create category. Please try again.",
         variant: "destructive",
       });
     },
@@ -101,17 +97,17 @@ export function NewBrandDialog() {
           className="text-white border-white/20 hover:bg-white/10"
         >
           <Plus className="h-4 w-4 mr-2" />
-          New Brand
+          New Category
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-black text-white border-white/20 max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Create New Brand</DialogTitle>
+          <DialogTitle>Create New Category</DialogTitle>
           <DialogDescription>
-            Add a new brand to your store.
+            Add a new category to your store.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[calc(90vh-8rem)] pr-4">
+        <ScrollArea className="h-[70vh] pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => createBrand.mutate(data))} className="space-y-4">
               <FormField
@@ -124,7 +120,7 @@ export function NewBrandDialog() {
                       <Input
                         {...field}
                         className="bg-transparent border-white/20"
-                        placeholder="Brand name"
+                        placeholder="Category name"
                       />
                     </FormControl>
                     <FormMessage />
@@ -141,7 +137,7 @@ export function NewBrandDialog() {
                       <Textarea
                         {...field}
                         className="bg-transparent border-white/20"
-                        placeholder="Brand description"
+                        placeholder="Category description"
                       />
                     </FormControl>
                     <FormMessage />
@@ -151,9 +147,9 @@ export function NewBrandDialog() {
               <FormField
                 control={form.control}
                 name="image"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Brand Image</FormLabel>
+                    <FormLabel>Image</FormLabel>
                     <FormControl>
                       <div className="space-y-4">
                         <Input
@@ -163,11 +159,11 @@ export function NewBrandDialog() {
                           className="bg-transparent border-white/20 file:bg-white/10 file:text-white file:border-0 file:mr-4 file:px-4 file:py-2 hover:file:bg-white/20"
                         />
                         {previewImage && (
-                          <div className="aspect-[21/9] overflow-hidden border border-white/20">
+                          <div className="relative">
                             <img
                               src={previewImage}
                               alt="Preview"
-                              className="w-full h-full object-cover"
+                              className="w-full max-h-[200px] object-cover rounded-md"
                             />
                           </div>
                         )}
@@ -182,7 +178,7 @@ export function NewBrandDialog() {
                 className="w-full bg-white text-black hover:bg-white/90"
                 disabled={createBrand.isPending}
               >
-                {createBrand.isPending ? "Creating..." : "Create Brand"}
+                {createBrand.isPending ? "Creating..." : "Create Category"}
               </Button>
             </form>
           </Form>

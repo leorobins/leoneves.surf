@@ -27,31 +27,31 @@ export function DeleteBrandDialog({ brand }: DeleteBrandDialogProps) {
 
   const deleteBrand = useMutation({
     mutationFn: async () => {
-      await apiRequest("DELETE", `/api/brands/${brand.id}`);
+      await apiRequest("DELETE", `/api/categories/${brand.id}`);
     },
     onSuccess: () => {
-      // Invalidate brands list
-      queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
+      // Invalidate categories list
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
 
-      // Invalidate specific brand query
-      queryClient.invalidateQueries({ queryKey: [`/api/brands/${brand.id}`] });
+      // Invalidate specific category query
+      queryClient.invalidateQueries({ queryKey: [`/api/categories/${brand.id}`] });
 
       // Invalidate products list as they might be affected
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
 
-      // Invalidate brand-specific products
-      queryClient.invalidateQueries({ queryKey: [`/api/products/brand/${brand.id}`] });
+      // Invalidate category-specific products
+      queryClient.invalidateQueries({ queryKey: [`/api/products/category/${brand.id}`] });
 
       toast({
-        title: "Brand deleted",
-        description: "The brand and its products have been deleted.",
+        title: "Category deleted",
+        description: "The category and its products have been deleted.",
       });
       setOpen(false);
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Could not delete brand. Please try again.",
+        description: "Could not delete category. Please try again.",
         variant: "destructive",
       });
     },

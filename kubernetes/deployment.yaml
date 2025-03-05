@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leoneves-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: leoneves-app
+  template:
+    metadata:
+      labels:
+        app: leoneves-app
+    spec:
+      containers:
+      - name: leoneves-app
+        image: your-registry/leoneves-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: database-url 

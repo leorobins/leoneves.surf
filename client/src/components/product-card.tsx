@@ -42,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
             />
           </div>
           <CardContent className="p-4">
-            <h3 className="font-semibold truncate">{product.name}</h3>
+            <h3 className="logo truncate">{product.name}</h3>
             <p className="text-2xl font-bold">${product.price}</p>
           </CardContent>
         </a>

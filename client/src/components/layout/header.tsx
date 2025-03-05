@@ -6,7 +6,7 @@ export function Header() {
       <div className="w-full h-16 flex items-center justify-center">
         <Link href="/">
           <a>
-            <span className="logo text-xl">DE-LACREAM-AT</span>
+            <span className="logo text-xl">THIS IS LEO NEVES</span>
           </a>
         </Link>
       </div>

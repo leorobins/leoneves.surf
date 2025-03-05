@@ -74,14 +74,14 @@ export default function BrandPage({ params }: { params: { id: string } }) {
                   />
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <p className="text-white text-sm font-light tracking-wide lowercase px-4 text-center">
+                    <p className="logo text-white text-sm px-4 text-center">
                       {product.name}
                     </p>
                   </div>
                   {/* Sold out overlay */}
                   {isSoldOut && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <p className="text-white text-sm font-light tracking-wide lowercase">
+                      <p className="logo text-white text-sm">
                         sold out
                       </p>
                     </div>

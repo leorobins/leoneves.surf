@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { type InsertProduct, type Product, type Brand, insertProductSchema, type SizeStock } from "@shared/schema";
+import { type InsertProduct, type Product, type Category, insertProductSchema, type SizeStock } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
@@ -41,19 +41,19 @@ interface EditProductDialogProps {
 export function EditProductDialog({ product }: EditProductDialogProps) {
   const [open, setOpen] = useState(false);
   const [images, setImages] = useState<string[]>(
-    product.images?.length > 0 ? product.images : [product.image]
+    product.images && Array.isArray(product.images) ? product.images : [product.image]
   );
   const [sizeStocks, setSizeStocks] = useState<SizeStock[]>(
-    product.sizeStock || []
+    Array.isArray(product.sizeStock) ? product.sizeStock : [{ size: "", stock: 0 }]
   );
   const [videos, setVideos] = useState<string[]>(
-    product.videos || []
+    product.videos && Array.isArray(product.videos) ? product.videos : []
   );
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const brands = useQuery<Brand[]>({
-    queryKey: ["/api/brands"]
+  const categories = useQuery<Category[]>({
+    queryKey: ["/api/categories"]
   });
 
   const form = useForm<InsertProduct>({
@@ -62,9 +62,9 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       name: product.name,
       description: product.description,
       image: product.image,
-      price: product.price.toString(),
-      brandId: product.brandId,
-      sizeStock: product.sizeStock || [],
+      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+      categoryId: product.categoryId,
+      sizeStock: Array.isArray(product.sizeStock) ? product.sizeStock : [{ size: "", stock: 0 }],
     },
   });
 
@@ -145,11 +145,11 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
     }
 
     files.forEach(file => {
-      // Check file size (limit to 25MB)
-      if (file.size > 25 * 1024 * 1024) {
+      // Check file size (limit to 20MB)
+      if (file.size > 20 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: `File ${file.name} is too large. Please choose videos under 25MB.`,
+          description: `File ${file.name} is too large. Please choose videos under 20MB.`,
           variant: "destructive"
         });
         return;
@@ -157,7 +157,61 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setVideos(prev => [...prev, reader.result as string]);
+        // Add a loading toast
+        const loadingToastId = toast({
+          title: "Processing video",
+          description: `Preparing ${file.name} for upload...`,
+        });
+
+        // Create a video element to get the video dimensions
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => {
+          // Create a canvas element for compression
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Set canvas dimensions to a reasonable size (720p max)
+          const maxWidth = 1280;
+          const maxHeight = 720;
+          let width = video.videoWidth;
+          let height = video.videoHeight;
+          
+          // Calculate new dimensions while maintaining aspect ratio
+          if (width > maxWidth || height > maxHeight) {
+            const aspectRatio = width / height;
+            if (width > height) {
+              width = maxWidth;
+              height = width / aspectRatio;
+            } else {
+              height = maxHeight;
+              width = height * aspectRatio;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw the first frame to the canvas (as a thumbnail)
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, width, height);
+            
+            // Get the thumbnail as a data URL
+            const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            
+            // Store the video with its thumbnail
+            setVideos(prev => [...prev, reader.result as string]);
+            
+            // Dismiss the loading toast
+            toast({
+              title: "Video added",
+              description: `${file.name} has been added successfully.`,
+            });
+          }
+        };
+        
+        // Set the video source to the FileReader result
+        video.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     });
@@ -171,8 +225,9 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
     mutationFn: async (data: InsertProduct) => {
       const transformedData = {
         ...data,
-        price: parseFloat(data.price.toString()).toFixed(2),
-        brandId: parseInt(data.brandId!.toString(), 10),
+        // Ensure price is a number
+        price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
+        categoryId: parseInt(data.categoryId!.toString(), 10),
         images: images,
         videos: videos,
         sizeStock: sizeStocks,
@@ -186,8 +241,8 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       // Invalidate specific product
       queryClient.invalidateQueries({ queryKey: [`/api/products/${product.id}`] });
 
-      // Invalidate brand-specific products
-      queryClient.invalidateQueries({ queryKey: [`/api/products/brand/${product.brandId}`] });
+      // Invalidate category-specific products
+      queryClient.invalidateQueries({ queryKey: [`/api/products/category/${product.categoryId}`] });
 
       toast({
         title: "Product updated",
@@ -264,29 +319,23 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
               />
               <FormField
                 control={form.control}
-                name="brandId"
+                name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Brand</FormLabel>
+                    <FormLabel>Category</FormLabel>
                     <Select
-                      onValueChange={(value) => {
-                        form.setValue("brandId", parseInt(value, 10));
-                      }}
-                      defaultValue={field.value?.toString()}
+                      value={field.value?.toString()}
+                      onValueChange={field.onChange}
                     >
                       <FormControl>
-                        <SelectTrigger className="bg-transparent border-white/20">
-                          <SelectValue placeholder="Select a brand" />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-black border-white/20">
-                        {brands.data?.map((brand) => (
-                          <SelectItem
-                            key={brand.id}
-                            value={brand.id.toString()}
-                            className="text-white hover:bg-white/10"
-                          >
-                            {brand.name}
+                      <SelectContent>
+                        {categories.data?.map(category => (
+                          <SelectItem key={category.id} value={category.id.toString()}>
+                            {category.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -303,13 +352,23 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                     <FormLabel>Price</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60">R$</span>
                         <Input
                           {...field}
-                          type="number"
-                          step="0.01"
-                          className="bg-transparent border-white/20 pl-7 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          placeholder="29.99"
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*[.,]?[0-9]*"
+                          onChange={(e) => {
+                            // Convert string to number before setting the value
+                            const value = e.target.value.replace(',', '.');
+                            if (value === '' || isNaN(parseFloat(value))) {
+                              form.setValue("price", 0);
+                            } else {
+                              form.setValue("price", parseFloat(value));
+                            }
+                          }}
+                          className="bg-transparent border-white/20 pl-10"
+                          placeholder="0,00"
                         />
                       </div>
                     </FormControl>

@@ -3,10 +3,15 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
+import { initializeDatabase } from "./db";
 
 const app = express();
-app.use(express.json({ limit: '25mb' }));  // Increase JSON payload limit to 25MB
-app.use(express.urlencoded({ extended: false, limit: '25mb' }));  // Also increase URL-encoded limit to 25MB
+app.use(express.json({ limit: '50mb' }));  // Increase JSON payload limit to 50MB
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));  // Also increase URL-encoded limit to 50MB
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Create MemoryStore instance
 const MemoryStoreSession = MemoryStore(session);
@@ -55,6 +60,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize the database before registering routes
+  try {
+    await initializeDatabase();
+    log('Database initialized successfully');
+  } catch (error) {
+    log('Error initializing database:', error instanceof Error ? error.message : String(error));
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -71,7 +84,7 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  const port = 5000;
+  const port = 3000;
   server.listen({
     port,
     host: "0.0.0.0",

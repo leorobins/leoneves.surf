@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,7 +10,9 @@ import Home from "@/pages/home";
 import ProductPage from "@/pages/product";
 import Cart from "@/pages/cart";
 import BrandPage from "@/pages/brand";
+import CategoryPage from "@/pages/category";
 import StorePage from "@/pages/store";
+import LoginPage from "@/pages/login";
 
 function Router() {
   return (
@@ -19,22 +21,29 @@ function Router() {
       <Route path="/product/:id" component={ProductPage} />
       <Route path="/cart" component={Cart} />
       <Route path="/brand/:id" component={BrandPage} />
+      <Route path="/category/:id" component={CategoryPage} />
       <Route path="/store" component={StorePage} />
+      <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  const [location] = useLocation();
+  
+  // Don't show header and footer on login page
+  const isLoginPage = location === "/login";
+  
   return (
-    <ThemeProvider defaultTheme="system" storageKey="de-lacream-at-theme">
+    <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen flex flex-col">
-          <Header />
+          {!isLoginPage && <Header />}
           <main className="flex-1">
             <Router />
           </main>
-          <Footer />
+          {!isLoginPage && <Footer />}
         </div>
         <Toaster />
       </QueryClientProvider>

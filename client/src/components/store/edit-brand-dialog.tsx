@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,7 +32,7 @@ interface EditBrandDialogProps {
 
 export function EditBrandDialog({ brand }: EditBrandDialogProps) {
   const [open, setOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(brand.image);
+  const [previewImage, setPreviewImage] = useState<string>(brand.image);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,21 +52,17 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Error",
-          description: "Image file is too large. Please choose an image under 5MB.",
+          description: "Image size should be less than 5MB",
           variant: "destructive"
         });
-        e.target.value = '';
         return;
       }
 
-      // Create a preview URL for the image
-      const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl);
-
-      // Convert image to base64 for storage
       const reader = new FileReader();
       reader.onloadend = () => {
-        form.setValue("image", reader.result as string);
+        const result = reader.result as string;
+        setPreviewImage(result);
+        form.setValue("image", result);
       };
       reader.readAsDataURL(file);
     }
@@ -74,20 +70,20 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
 
   const updateBrand = useMutation({
     mutationFn: async (data: InsertBrand) => {
-      await apiRequest("PATCH", `/api/brands/${brand.id}`, data);
+      await apiRequest("PATCH", `/api/categories/${brand.id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       toast({
-        title: "Brand updated",
-        description: "The brand has been updated successfully.",
+        title: "Category updated",
+        description: "The category has been updated successfully.",
       });
       setOpen(false);
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Could not update brand. Please try again.",
+        description: "Could not update category. Please try again.",
         variant: "destructive",
       });
     },
@@ -106,12 +102,12 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
       </DialogTrigger>
       <DialogContent className="bg-black text-white border-white/20 max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Edit Brand</DialogTitle>
+          <DialogTitle>Edit Category</DialogTitle>
           <DialogDescription>
-            Update brand information.
+            Update category information.
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[calc(90vh-8rem)] pr-4">
+        <ScrollArea className="h-[70vh] pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => updateBrand.mutate(data))} className="space-y-4">
               <FormField
@@ -124,7 +120,7 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
                       <Input
                         {...field}
                         className="bg-transparent border-white/20"
-                        placeholder="Brand name"
+                        placeholder="Category name"
                       />
                     </FormControl>
                     <FormMessage />
@@ -141,7 +137,7 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
                       <Textarea
                         {...field}
                         className="bg-transparent border-white/20"
-                        placeholder="Brand description"
+                        placeholder="Category description"
                       />
                     </FormControl>
                     <FormMessage />
@@ -151,9 +147,9 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
               <FormField
                 control={form.control}
                 name="image"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Brand Image</FormLabel>
+                    <FormLabel>Image</FormLabel>
                     <FormControl>
                       <div className="space-y-4">
                         <Input
@@ -162,15 +158,13 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
                           onChange={handleImageUpload}
                           className="bg-transparent border-white/20 file:bg-white/10 file:text-white file:border-0 file:mr-4 file:px-4 file:py-2 hover:file:bg-white/20"
                         />
-                        {previewImage && (
-                          <div className="aspect-[21/9] overflow-hidden border border-white/20">
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
+                        <div className="relative">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="w-full max-h-[200px] object-cover rounded-md"
+                          />
+                        </div>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -182,7 +176,7 @@ export function EditBrandDialog({ brand }: EditBrandDialogProps) {
                 className="w-full bg-white text-black hover:bg-white/90"
                 disabled={updateBrand.isPending}
               >
-                {updateBrand.isPending ? "Updating..." : "Update Brand"}
+                {updateBrand.isPending ? "Updating..." : "Update Category"}
               </Button>
             </form>
           </Form>

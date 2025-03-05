@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { FixedCart } from "@/components/fixed-cart";
 import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Volume2, VolumeX } from "lucide-react";
 import useEmblaCarousel from 'embla-carousel-react';
 import { Video } from "lucide-react";
 
@@ -14,6 +14,8 @@ import { Video } from "lucide-react";
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -35,12 +37,35 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       const index = mainEmbla.selectedScrollSnap();
       setSelectedIndex(index);
       thumbEmbla.scrollTo(index);
+      
+      // Pause all videos when changing slides
+      videoRefs.current.forEach((videoRef, i) => {
+        if (videoRef) {
+          if (i === index) {
+            videoRef.play().catch(err => console.log('Autoplay prevented:', err));
+          } else {
+            videoRef.pause();
+          }
+        }
+      });
     });
 
     return () => {
       mainEmbla.off('select');
     };
   }, [mainEmbla, thumbEmbla]);
+
+  // Handle mute/unmute for all videos
+  const toggleMute = () => {
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    
+    videoRefs.current.forEach(videoRef => {
+      if (videoRef) {
+        videoRef.muted = newMutedState;
+      }
+    });
+  };
 
   const onThumbClick = useCallback(
     (index: number) => {
@@ -124,9 +149,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const productImages = product.data.images?.length > 0
+  const productImages = product.data?.images && product.data.images.length > 0
     ? product.data.images
-    : [product.data.image];
+    : [product.data!.image];
 
   const allMedia = [
     ...productImages,
@@ -135,6 +160,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
   const otherProducts = relatedProducts.data?.filter(p => p.id !== product.data.id).slice(0, 5) || [];
 
+  // Reset video refs array when media changes
+  videoRefs.current = allMedia.map((_, i) => videoRefs.current[i] || null);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto py-8 px-4">
@@ -142,11 +170,26 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Main Product Image with Back Button */}
           <div className="relative">
             <button
-              onClick={() => setLocation(`/brand/${product.data.brandId}`)}
+              onClick={() => setLocation(`/category/${product.data.categoryId}`)}
               className="absolute left-4 top-4 z-10 hover:text-white/70"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
+
+            {/* Mute/Unmute Button for Videos */}
+            {allMedia.some(media => 
+              media.startsWith('data:video') || 
+              media.match(/\.(mp4|webm|ogg)$/) || 
+              media.startsWith('/uploads/videos/')
+            ) && (
+              <button
+                onClick={toggleMute}
+                className="absolute right-4 top-4 z-10 p-2 bg-black/50 rounded-full hover:bg-black/70"
+                aria-label={isMuted ? "Unmute video" : "Mute video"}
+              >
+                {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </button>
+            )}
 
             {/* Main Carousel */}
             <div className="overflow-hidden" ref={mainViewRef}>
@@ -156,10 +199,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     key={index}
                     className="flex-[0_0_100%] min-w-0"
                   >
-                    {mediaUrl.startsWith('data:video') || mediaUrl.match(/\.(mp4|webm|ogg)$/) ? (
+                    {(mediaUrl.startsWith('data:video') || 
+                      mediaUrl.match(/\.(mp4|webm|ogg)$/) || 
+                      mediaUrl.startsWith('/uploads/videos/')) ? (
                       <video
+                        ref={el => videoRefs.current[index] = el}
                         src={mediaUrl}
-                        controls
+                        autoPlay={index === selectedIndex}
+                        muted={isMuted}
+                        loop
+                        playsInline
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -185,7 +234,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                       index === selectedIndex ? 'ring-2 ring-white' : ''
                     }`}
                   >
-                    {mediaUrl.startsWith('data:video') || mediaUrl.match(/\.(mp4|webm|ogg)$/) ? (
+                    {(mediaUrl.startsWith('data:video') || 
+                      mediaUrl.match(/\.(mp4|webm|ogg)$/) || 
+                      mediaUrl.startsWith('/uploads/videos/')) ? (
                       <div className="w-full h-full bg-black flex items-center justify-center">
                         <Video className="h-6 w-6" />
                       </div>
@@ -206,10 +257,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="space-y-6">
             <div>
               <div>
-                <h1 className="text-xl font-normal lowercase mb-2">{product.data.name}</h1>
+                <h1 className="logo text-xl mb-2">{product.data.name}</h1>
                 <p className="text-lg">${product.data.price}</p>
               </div>
-              <p className="text-sm text-white/70 mt-4">Shipping calculated at checkout.</p>
+              <p className="text-sm text-white/70 mt-4">Frete calculado no checkout.</p>
             </div>
 
             {/* Size Selection */}

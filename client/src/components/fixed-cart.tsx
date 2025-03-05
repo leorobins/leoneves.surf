@@ -57,10 +57,10 @@ export function FixedCart() {
   // Format WhatsApp message
   const formatWhatsAppMessage = () => {
     const items = cartProducts.map(item => 
-      `${item.quantity}x ${item.product?.name} - $${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}`
+      `${item.quantity}x ${item.product?.name} (Tamanho: ${item.size}) - R$${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}`
     ).join('\n');
 
-    const message = `Hello! I would like to order:\n\n${items}\n\nTotal: $${total.toFixed(2)} USD`;
+    const message = `Olá! Gostaria de fazer um pedido:\n\n${items}\n\nTotal: R$${total.toFixed(2)}`;
     return encodeURIComponent(message);
   };
 
@@ -78,9 +78,10 @@ export function FixedCart() {
             <div className="flex items-center gap-2">
               <span>{item.quantity}x</span>
               <span className="truncate">{item.product?.name}</span>
+              <span className="text-xs text-white/60">({item.size})</span>
             </div>
             <div className="flex items-center gap-2">
-              <span>${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}</span>
+              <span>R${item.product ? (parseFloat(item.product.price) * item.quantity).toFixed(2) : '0.00'}</span>
               <button
                 onClick={() => deleteItem.mutate(item.id)}
                 disabled={deleteItem.isPending}
@@ -96,8 +97,8 @@ export function FixedCart() {
       {/* Cart Summary */}
       <div className="border-t border-white/20 pt-2 mb-4">
         <div className="flex justify-between items-center text-sm">
-          <div>{itemCount} Items</div>
-          <div>${total.toFixed(2)} USD</div>
+          <div>{itemCount} Itens</div>
+          <div>R${total.toFixed(2)}</div>
         </div>
       </div>
 
@@ -109,7 +110,7 @@ export function FixedCart() {
         className="block w-full bg-black text-center text-sm py-3 border border-white/20 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ pointerEvents: itemCount === 0 ? 'none' : 'auto', opacity: itemCount === 0 ? 0.5 : 1 }}
       >
-        checkout
+        finalizar compra
       </a>
     </div>
   );
