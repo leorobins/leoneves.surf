@@ -38,13 +38,15 @@ RUN mkdir -p uploads
 # Expose the port
 EXPOSE 3000
 
+# Create a startup script with error handling - using explicit path and content
+RUN printf '#!/bin/sh\nset -e\necho "Starting server..."\ncd /app\nexec npx tsx server/index.ts\n' > /app/start.sh && \
+    chmod +x /app/start.sh && \
+    ls -la /app/start.sh && \
+    cat /app/start.sh
+
 # Add a healthcheck
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD curl -f http://localhost:3000/health || exit 1
 
-# Create a startup script with error handling
-RUN echo '#!/bin/sh\nset -e\necho "Starting server..."\nexec npx tsx server/index.ts\n' > /app/start.sh && \
-    chmod +x /app/start.sh
-
-# Start the application with proper error handling
-CMD ["/app/start.sh"] 
+# Start the application directly as a fallback in case the script isn't found
+CMD ["/bin/sh", "-c", "if [ -f /app/start.sh ]; then /app/start.sh; else cd /app && npx tsx server/index.ts; fi"] 
