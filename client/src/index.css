@@ -31,7 +31,7 @@
   }
 
   * {
-    @apply border-border;
+    @apply border-neutral-800;
   }
 
   body {
