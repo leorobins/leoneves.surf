@@ -13,8 +13,11 @@ RUN cd client && npm install
 # Copy the rest of the application
 COPY . .
 
-# Build the client without TypeScript checks
-RUN cd client && npm run build -- --skipTypeCheck
+# Build the client
+RUN cd client && npm run build
+
+# Install tsx globally for running TypeScript files directly
+RUN npm install -g tsx
 
 # Create uploads directory
 RUN mkdir -p uploads
@@ -22,5 +25,5 @@ RUN mkdir -p uploads
 # Expose the port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "start"] 
+# Start the application using tsx to run TypeScript directly
+CMD ["npx", "tsx", "server/index.ts"] 
