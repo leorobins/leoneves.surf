@@ -31,7 +31,7 @@ A modern e-commerce platform for surf products, built with React, TypeScript, an
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/leoneves.surf.git
+git clone https://github.com/leorobins/leoneves.surf.git
 cd leoneves.surf
 ```
 
