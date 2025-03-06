@@ -13,6 +13,10 @@ RUN cd client && npm install
 # Copy the rest of the application
 COPY . .
 
+# Create a symlink for the shared directory in client's node_modules
+RUN mkdir -p client/node_modules/@shared && \
+    cp -r shared/* client/node_modules/@shared/
+
 # Build the client
 RUN cd client && npm run build
 
