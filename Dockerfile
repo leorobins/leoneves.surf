@@ -13,12 +13,12 @@ RUN cd client && npm install
 # Copy the rest of the application
 COPY . .
 
-# Create a symlink for the shared directory in client's node_modules
-RUN mkdir -p client/node_modules/@shared && \
-    cp -r shared/* client/node_modules/@shared/
+# Fix the link-shared.js script to use CommonJS
+RUN echo "// CommonJS version for Docker build" > client/link-shared.cjs && \
+    cat client/link-shared.js >> client/link-shared.cjs
 
-# Build the client
-RUN cd client && npm run build
+# Build the client (the prebuild script will run link-shared.js)
+RUN cd client && node link-shared.cjs && npm run build
 
 # Install tsx globally for running TypeScript files directly
 RUN npm install -g tsx
